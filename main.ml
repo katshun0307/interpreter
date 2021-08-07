@@ -1,0 +1,3 @@
+open Lfeqc
+
+let () = main ()

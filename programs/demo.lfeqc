@@ -1,0 +1,10 @@
+let isodd = lam x: int. (x / 2) * 2 < x;;
+
+let pow_n = let rec pow_n = lam n:int. (lam x: int code. (if n >= 1 && n <= 1 then next(prev x) else if (isodd n) then next(let hoge = (prev ((pow_n (n / 2)) x)) in hoge * hoge * prev(x)) else next(let hoge = (prev ((pow_n (n / 2)) x)) in hoge * hoge))) in pow_n;;
+
+let pow_4_11 = (pow_n 8) next(4);;
+(*  next(let hoge = let hoge = let hoge = 4 in hoge * hoge in hoge * hoge in hoge * hoge) *)
+
+{next(let hoge = let hoge = 4 in hoge * hoge in hoge * hoge), id{pow_4_11} :: sigma x: int code. ((eq{int code} next(let hoge = prev(x) in hoge * hoge)) pow_4_11)};;
+
+(* {next(let hoge = let hoge = 4 in hoge * hoge in hoge * hoge), id{next(let hoge = let hoge = let hoge = 4 in hoge * hoge in hoge * hoge in hoge * hoge)} :: sigma x: int code. ((eq{int code} next(let hoge = prev(x) in hoge * hoge)) pow_4_11)};; *)

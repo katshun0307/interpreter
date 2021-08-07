@@ -1,0 +1,38 @@
+(* let rec pow_n n x = *)
+(* if n = 0 then .<1>. *)
+(* else if n = 1 then .<.~x>. *)
+(* else *)
+(* if n mod 2 = 0 then *)
+(* .<let hoge = .~(pow_n (n / 2) x) in hoge * hoge>. *)
+(* else .<let hoge = .~(pow_n (n / 2) x) in hoge * hoge * .~x>.;; *)
+
+next(let a = 3 in a);;
+
+next(let a = 4 in a * a);;
+
+next(let a = prev (next 3) in a);;
+
+(* let rec pow_n = lam n:int. (lam x: int code. x) in pow_n;; *)
+
+(* let rec pow_n = lam n:int. (lam x: int code. if n >= 1 && n <= 1 then next(prev x) else false) in pow_n;; *)
+
+(* let rec pow_n = lam p:(sigma x:int. int code). (if (p.fst >= 1) && (p.fst <= 1) then next(prev p.snd) else next(let hoge = (prev (pow_n (p.fst / 2) p.snd)) in hoge * hoge)) in pow_n 8 4;; *)
+
+let isodd = lam x: int. (x / 2) * 2 < x;;
+
+let pow_n = let rec pow_n = lam n:int. (lam x: int code. (if n >= 1 && n <= 1 then next(prev x) else if (isodd n) then next(let hoge = (prev ((pow_n (n / 2)) x)) in hoge * hoge * prev(x)) else next(let hoge = (prev ((pow_n (n / 2)) x)) in hoge * hoge))) in pow_n;;
+
+(* let rec pow_n = lam n:int. (lam x: int code. (if n >= 1 && n <= 1 then next(prev x) else if (isodd n) then next(let hoge = (prev ((pow_n (n / 2)) x)) in hoge * hoge * prev(x)) else next(let hoge = (prev ((pow_n (n / 2)) x)) in hoge * hoge))) in pow_n;; *)
+
+let pow_4_11 = (pow_n 8) next(4);;
+(*  next(let hoge = let hoge = let hoge = 4 in hoge * hoge in hoge * hoge in hoge * hoge) *)
+
+(* {next(let hoge = let hoge = 4 in hoge * hoge in hoge * hoge), id{pow_4_11} :: sigma x: int code. ((eq{int code} next(let hoge = prev(x) in hoge * hoge)) pow_4_11)};; *)
+
+(* substitute pow_4_11 with it's content *)
+(* {next(let hoge = let hoge = 4 in hoge * hoge in hoge * hoge), id{next(let hoge = let hoge = let hoge = 4 in hoge * hoge in hoge * hoge in hoge * hoge)} :: sigma x: int code. ((eq{int code} next(let hoge = prev(x) in hoge * hoge)) pow_4_11)};; *)
+
+{next(fuga * fuga), id{pow_4_11} :: sigma x: int code. ((eq{int code} next(let hoge = let hoge = 4 in hoge * hoge in hoge)) pow_4_11)};;
+
+(* (lam x: 
+(sigma y: int code. ((eq{int code} pow_4_11) (next(let hoge = let hoge = 4 in hoge * hoge in hoge * hoge in prev(y))))) x) {next(hoge * hoge), id{pow_4_11}: (sigma x: int code. ((eq{int code} next(let hoge = let hoge = 4 in hoge * hoge in hoge)) pow_4_11))};; *)

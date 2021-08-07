@@ -1,0 +1,4 @@
+let f = lam x: int code. next((prev x) + (prev x));;
+let a = next(2 + 3);;
+let prog = f a;;
+(* run prog;; *)

@@ -1,0 +1,18 @@
+(library
+ (name lfeqc)
+ (public_name lfeqc)
+ (modules lfeqc lexer parser syntax eval
+ algorithmic_equivalence algorithmic_typing algorithmic_reduction
+ tyenv classifier_modules environment
+ )
+ (preprocess
+  (pps ppx_deriving.show))
+ (libraries core))
+
+(ocamllex lexer)
+
+(menhir
+ (modules parser))
+
+(documentation
+(package lfeqc))
