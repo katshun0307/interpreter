@@ -94,8 +94,8 @@ let rec judge_type ~stage ~tyenv = function
   (* Misc *)
   | IntImmidiate _ -> TyInt
   | BoolImmidiate _ -> TyBool
-  | BinOp (Plus, _, _) | BinOp (Mult, _, _) | BinOp (Div, _, _) -> TyInt
-  | BinOp (Lt, _, _) | BinOp (Lte, _, _) | BinOp (Gt, _, _) | BinOp (Gte, _, _) -> TyBool
+  | BinOp (Plus, t1, t2) | BinOp (Mult, t1, t2) | BinOp (Div, t1, t2) when (assert_type ~stage ~tyenv t1 TyInt = ()) -> TyInt
+  | BinOp (Lt, t1, t2) | BinOp (Lte, t1, t2) | BinOp (Gt, t1, t2) | BinOp (Gte, t1, t2) | BinOp(And, t1, t2) | BinOp(Or, t1, t2) -> TyBool
   | TmIf (t_cond, t_then, t_else) ->
     let _ = assert_type ~stage ~tyenv t_cond TyBool in
     let ty_then = judge_type ~tyenv ~stage t_then in
@@ -104,7 +104,10 @@ let rec judge_type ~stage ~tyenv = function
       judge_type_equivalence ~tyenv ~stage ~index:(EqIndex.empty ()) (ty_then, ty_else)
     in
     ty_then
-  | _ as t -> raise (NoBindingException (t |> string_of_tm))
+  | TmLet(x, t1, t2) ->
+    let ty1 = judge_type ~tyenv ~stage t1 in
+    judge_type ~stage ~tyenv:(tyenv *: (x, stage, ty1)) t2
+  | _ as t -> raise (NoBindingException ("judge_type: " ^ (t |> string_of_tm)))
 
 (** Judge kind of the given [ty] under [stage] and [tyenv]. *)
 and judge_kind ~stage ~tyenv = function

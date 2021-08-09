@@ -64,6 +64,9 @@ let rec is_value_exn ~stage = function
     | BinOp (op, tm1, tm2) ->
       is_value_exn ~stage tm1;
       is_value_exn ~stage tm2
+    | TmLet(x, t1, t2) ->
+      is_value_exn ~stage t1;
+      is_value_exn ~stage t2
     | _ -> raise NotValue)
   | _ -> raise NotValue
 ;;
@@ -120,10 +123,14 @@ let rec one_step_eval_opt tm ~stage ~env =
   (* TODO: check for free variables inside csp *)
   | Csp (a, t) -> Some t
   (* Misc *)
-  | BinOp (op, IntImmidiate i1, IntImmidiate i2) when Stage.is_empty stage ->
+  | BinOp (op, IntImmidiate i1, IntImmidiate i2) when Stage.is_empty stage  ->
     fun_of_op op i1 i2 |> Option.some
   | BinOp (op, BoolImmidiate b1, BoolImmidiate b2) when Stage.is_empty stage ->
     fun_of_lop op b1 b2 |> Option.some
+  | TmIf(BoolImmidiate b, body_if, body_else) when Stage.is_empty stage ->
+    (if b then body_if else body_else) |> Option.some
+  | TmLet(x, v1, t2) when is_value ~stage v1 ->
+    subst_term ~source:x ~target:v1 t2 |> Option.some
   (* === Non-congruent Rules === *)
   (* E-Abs *)
   | TmLam (x, ty_arg, t) when Stage.is_empty stage |> not ->
@@ -160,6 +167,10 @@ let rec one_step_eval_opt tm ~stage ~env =
     t2 |> one_step_eval_opt ~stage ~env >>| fun t2' -> BinOp (op, v1, t2')
   | BinOp (op, t1, t2) ->
     t1 |> one_step_eval_opt ~stage ~env >>| fun t1' -> BinOp (op, t1', t2)
+  | TmIf(tm_cond, tm_if, tm_else) ->
+    tm_cond |> one_step_eval_opt ~stage ~env >>| fun tm_cond' -> TmIf(tm_cond', tm_if, tm_else)
+  | TmLet(x, t1, t2) ->
+    t1 |> one_step_eval_opt ~stage ~env >>| fun t1' -> TmLet (x, t1', t2)
   | v when is_value ~stage v -> None
   | v -> let _ = v |> show_tm |> print_endline in
     raise NotExpected
