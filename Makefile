@@ -1,12 +1,13 @@
 builder = dune
 target = main
 
-default: main.exe
+default: lfeqc.exe
 
 .PHONY: test clean
 
-main.exe:
+lfeqc.exe: src/* main.ml
 	dune build main.exe --profile release
+	mv ./_build/default/main.exe ./lfeqc.exe
 
 test:
 	dune runtest --profile release
