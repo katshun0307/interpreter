@@ -109,16 +109,16 @@ let rec one_step_eval_opt tm ~stage ~env =
   (* E-StageBeta *)
   | Escape (a, Quote (b, t)) when b = a && Stage.is_empty stage -> Some t
   (* E-GenApp *)
-  | GenApp (Gen (a, tm), stage_arg) ->
+  | GenApp (Gen (a, tm), stage_arg) when Stage.is_empty stage  ->
     subst_classifier_term ~source:a ~target:stage_arg tm |> Option.some
   (* E-Fst *)
-  | TmFst (TmPair (tm1, tm2, _)) when is_value ~stage tm1 && is_value ~stage tm2 ->
+  | TmFst (TmPair (tm1, tm2, _)) when is_value ~stage tm1 && is_value ~stage tm2 && Stage.is_empty stage ->
     tm1 |> Option.some
   (* E-Snd *)
-  | TmFst (TmPair (tm1, tm2, _)) when is_value ~stage tm1 && is_value ~stage tm2 ->
+  | TmFst (TmPair (tm1, tm2, _)) when is_value ~stage tm1 && is_value ~stage tm2 && Stage.is_empty stage ->
     tm1 |> Option.some
   (* E-Idpeel *)
-  | TmIdpeel (TmId y, x, t) -> subst_term ~source:x ~target:y t |> Option.some
+  | TmIdpeel (TmId y, x, t) when Stage.is_empty stage  -> subst_term ~source:x ~target:y t |> Option.some
   (* E-Csp *)
   (* TODO: check for free variables inside csp *)
   | Csp (a, t) -> Some t
