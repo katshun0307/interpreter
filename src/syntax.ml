@@ -5,7 +5,7 @@ open Classifier_modules
 
 exception NoBindingException of string
 exception OccurCheckError
-exception NotExpected
+exception NotExpected of string
 exception NotBound
 exception NotImplemented
 exception EOF
@@ -181,7 +181,7 @@ let rec generic_map_term tm ~map =
     | Run tm -> Run (map_inner tm)
     | TyTmVar _ -> tm
     | LamV _ -> raise NotImplemented
-    | ProcV _ -> raise NotExpected)
+    | ProcV _ -> raise (NotExpected "generic_map_term"))
 ;;
 
 (* === Substitutions === *)

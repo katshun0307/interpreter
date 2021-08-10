@@ -173,7 +173,7 @@ let rec one_step_eval_opt tm ~stage ~env =
     t1 |> one_step_eval_opt ~stage ~env >>| fun t1' -> TmLet (x, t1', t2)
   | v when is_value ~stage v -> None
   | v -> let _ = v |> show_tm |> print_endline in
-    raise NotExpected
+    raise (NotExpected ("one_stage_eval_opt: progress violation for term" ^ (string_of_tm tm)))
 
 (** Perform [one_step_eval_opt] until the term saturates. *)
 let rec eval_term tm ~stage ~env =

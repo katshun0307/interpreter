@@ -112,7 +112,7 @@ let show_result = function
       (data.ty_opt |> Option.map ~f:string_of_ty |> Option.value ~default:"-")
       (data.tm_opt |> Option.map ~f:string_of_tm |> Option.value ~default:"-")
   | Meta _ -> raise NotImplemented
-  | Dummy -> raise NotExpected
+  | Dummy -> raise (NotExpected "function: show_result")
   | RunError e -> printf "RunError of %s" (e |> sexp_of_exn |> string_of_sexp)
 ;;
 
