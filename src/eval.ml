@@ -138,6 +138,8 @@ let rec one_step_eval_opt tm ~stage ~env =
   (* E-App2 *)
   | TmApp (v1, t2) when is_value ~stage v1 ->
     one_step_eval_opt ~stage ~env t2 >>| fun t2' -> TmApp (v1, t2')
+  (* E-App1 *)
+  | TmApp (t1, t2) -> one_step_eval_opt ~stage ~env t1 >>| fun t1' -> TmApp (t1', t2)
   (* E-SndInner *)
   | TmPair (v1, t2, ty) when is_value ~stage v1 ->
     one_step_eval_opt ~stage ~env t2 >>| fun t2' -> TmPair (v1, t2', ty)
@@ -171,9 +173,16 @@ let rec one_step_eval_opt tm ~stage ~env =
     tm_cond |> one_step_eval_opt ~stage ~env >>| fun tm_cond' -> TmIf(tm_cond', tm_if, tm_else)
   | TmLet(x, t1, t2) ->
     t1 |> one_step_eval_opt ~stage ~env >>| fun t1' -> TmLet (x, t1', t2)
+  | TmVariable x -> E.lookup_exn x env |> Option.some
   | v when is_value ~stage v -> None
-  | v -> let _ = v |> show_tm |> print_endline in
-    raise (NotExpected ("one_stage_eval_opt: progress violation for term" ^ (string_of_tm tm)))
+  | v ->
+    let _ = v |> show_tm |> print_endline in
+    let _ =
+      "one_stage_eval_opt: progress violation for term: " ^ string_of_tm tm
+      |> print_endline
+    in
+    raise (NotExpected "one_stage_eval_opt")
+;;
 
 (** Perform [one_step_eval_opt] until the term saturates. *)
 let rec eval_term tm ~stage ~env =
