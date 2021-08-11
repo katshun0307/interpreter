@@ -57,14 +57,14 @@ let rec is_value_exn ~stage = function
       is_value_exn ~stage:rest t
     (* Misc *)
     | IntImmidiate _ | BoolImmidiate _ -> ()
-    | TmIf(cond, do_if, do_else) ->
+    | TmIf (cond, do_if, do_else) ->
       is_value_exn ~stage cond;
       is_value_exn ~stage do_if;
       is_value_exn ~stage do_else
     | BinOp (op, tm1, tm2) ->
       is_value_exn ~stage tm1;
       is_value_exn ~stage tm2
-    | TmLet(x, t1, t2) ->
+    | TmLet (x, t1, t2) ->
       is_value_exn ~stage t1;
       is_value_exn ~stage t2
     | _ -> raise NotValue)
@@ -98,7 +98,6 @@ let fun_of_lop op b1 b2 =
   | _ -> raise (EvalError "fun_of_lop: invalid operation")
 ;;
 
-
 (** One step evaluation. Returns [None] if there is no reduction. *)
 let rec one_step_eval_opt tm ~stage ~env =
   match tm with
@@ -109,27 +108,30 @@ let rec one_step_eval_opt tm ~stage ~env =
   (* E-StageBeta *)
   | Escape (a, Quote (b, t)) when b = a && Stage.is_empty stage -> Some t
   (* E-GenApp *)
-  | GenApp (Gen (a, tm), stage_arg) when Stage.is_empty stage  ->
+  | GenApp (Gen (a, tm), stage_arg) when Stage.is_empty stage ->
     subst_classifier_term ~source:a ~target:stage_arg tm |> Option.some
   (* E-Fst *)
-  | TmFst (TmPair (tm1, tm2, _)) when is_value ~stage tm1 && is_value ~stage tm2 && Stage.is_empty stage ->
+  | TmFst (TmPair (tm1, tm2, _))
+    when is_value ~stage tm1 && is_value ~stage tm2 && Stage.is_empty stage ->
     tm1 |> Option.some
   (* E-Snd *)
-  | TmFst (TmPair (tm1, tm2, _)) when is_value ~stage tm1 && is_value ~stage tm2 && Stage.is_empty stage ->
+  | TmFst (TmPair (tm1, tm2, _))
+    when is_value ~stage tm1 && is_value ~stage tm2 && Stage.is_empty stage ->
     tm1 |> Option.some
   (* E-Idpeel *)
-  | TmIdpeel (TmId y, x, t) when Stage.is_empty stage  -> subst_term ~source:x ~target:y t |> Option.some
+  | TmIdpeel (TmId y, x, t) when Stage.is_empty stage ->
+    subst_term ~source:x ~target:y t |> Option.some
   (* E-Csp *)
   (* TODO: check for free variables inside csp *)
   | Csp (a, t) -> Some t
   (* Misc *)
-  | BinOp (op, IntImmidiate i1, IntImmidiate i2) when Stage.is_empty stage  ->
+  | BinOp (op, IntImmidiate i1, IntImmidiate i2) when Stage.is_empty stage ->
     fun_of_op op i1 i2 |> Option.some
   | BinOp (op, BoolImmidiate b1, BoolImmidiate b2) when Stage.is_empty stage ->
     fun_of_lop op b1 b2 |> Option.some
-  | TmIf(BoolImmidiate b, body_if, body_else) when Stage.is_empty stage ->
+  | TmIf (BoolImmidiate b, body_if, body_else) when Stage.is_empty stage ->
     (if b then body_if else body_else) |> Option.some
-  | TmLet(x, v1, t2) when is_value ~stage v1 ->
+  | TmLet (x, v1, t2) when is_value ~stage v1 ->
     subst_term ~source:x ~target:v1 t2 |> Option.some
   (* === Non-congruent Rules === *)
   (* E-Abs *)
@@ -169,9 +171,11 @@ let rec one_step_eval_opt tm ~stage ~env =
     t2 |> one_step_eval_opt ~stage ~env >>| fun t2' -> BinOp (op, v1, t2')
   | BinOp (op, t1, t2) ->
     t1 |> one_step_eval_opt ~stage ~env >>| fun t1' -> BinOp (op, t1', t2)
-  | TmIf(tm_cond, tm_if, tm_else) ->
-    tm_cond |> one_step_eval_opt ~stage ~env >>| fun tm_cond' -> TmIf(tm_cond', tm_if, tm_else)
-  | TmLet(x, t1, t2) ->
+  | TmIf (tm_cond, tm_if, tm_else) ->
+    tm_cond
+    |> one_step_eval_opt ~stage ~env
+    >>| fun tm_cond' -> TmIf (tm_cond', tm_if, tm_else)
+  | TmLet (x, t1, t2) ->
     t1 |> one_step_eval_opt ~stage ~env >>| fun t1' -> TmLet (x, t1', t2)
   | TmVariable x -> E.lookup_exn x env |> Option.some
   | v when is_value ~stage v -> None

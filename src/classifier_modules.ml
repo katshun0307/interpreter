@@ -77,7 +77,11 @@ end = struct
 
   let remove_classifier_exn a = function
     | classifier :: rest when classifier = a -> rest
-    | _ as stage -> printf "cannot remove classifier %s from stage %s\n" (string_of_classifier a) (to_string stage);
+    | _ as stage ->
+      printf
+        "cannot remove classifier %s from stage %s\n"
+        (string_of_classifier a)
+        (to_string stage);
       raise OperationFailed
   ;;
 

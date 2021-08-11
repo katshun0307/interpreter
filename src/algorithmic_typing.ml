@@ -4,8 +4,11 @@ open Classifier_modules
 open Algorithmic_equivalence
 open Tyenv.Tyenv
 
-let raise_not_expected(tm) =
-  NotExpected (sprintf "judge_type: entered unexpected match case when typing %s" (string_of_tm tm)) |> raise
+let raise_not_expected tm =
+  sprintf "judge_type: entered unexpected match case when typing %s" (string_of_tm tm)
+  |> print_endline;
+  raise (NotExpected "judge_type")
+;;
 
 (**
 Typing, kinding and well-formed kind judgements in algorithmic system. *)
@@ -13,7 +16,6 @@ Typing, kinding and well-formed kind judgements in algorithmic system. *)
 (** Judge type of the given [ty] under [stage] and [tyenv]. *)
 
 let rec judge_type ~stage ~tyenv tm =
-  let _ = tm |> string_of_tm |> print_endline in
   match tm with
   (* TA-Var *)
   | TmVariable x ->
@@ -22,7 +24,7 @@ let rec judge_type ~stage ~tyenv tm =
     ty
   (* TA-Abs *)
   | TmLam (x, ty_arg, t) ->
-    TyPi(x, ty_arg, judge_type ~stage ~tyenv:(tyenv *: (x, stage, ty_arg)) t)
+    TyPi (x, ty_arg, judge_type ~stage ~tyenv:(tyenv *: (x, stage, ty_arg)) t)
   (* TA-Pair *)
   | TmPair (t1, t2, (TySigma (x, ty_one, ty_two) as ty)) ->
     let ty_one' = judge_type ~stage ~tyenv t1 in
@@ -72,7 +74,10 @@ let rec judge_type ~stage ~tyenv tm =
     (match eq_ty with
     | TyApp (TyApp (Equality ty, s1), _) ->
       (* NOTE: uses [s1] (the first term of the equality type) to infer the type C x x id(x) *)
-      let c_ty = judge_type ~tyenv:(tyenv *: (x, stage, ty)) ~stage t_body |> subst_type ~source:x ~target:s1 in
+      let c_ty =
+        judge_type ~tyenv:(tyenv *: (x, stage, ty)) ~stage t_body
+        |> subst_type ~source:x ~target:s1
+      in
       c_ty
     | _ -> raise_not_expected tm)
   (* TA-Quote *)
@@ -80,7 +85,7 @@ let rec judge_type ~stage ~tyenv tm =
     let ty_inner = judge_type ~tyenv ~stage:(Stage.add_classifier a stage) t in
     TyQuote (a, ty_inner)
   (* TA-Escape *)
-  | Escape (a, t) as tm->
+  | Escape (a, t) as tm ->
     let ty_code = judge_type ~tyenv ~stage:(Stage.remove_classifier_exn a stage) t in
     (match ty_code with
     | TyQuote (b, ty_inner) when a = b -> ty_inner
@@ -90,7 +95,7 @@ let rec judge_type ~stage ~tyenv tm =
     let inner_ty = judge_type ~tyenv ~stage t in
     TyGen (a, inner_ty)
   (* TA-GenApp *)
-  | GenApp (t, st) as tm->
+  | GenApp (t, st) as tm ->
     let ty = judge_type ~tyenv ~stage t in
     (match ty with
     | TyGen (a, inner_ty) -> subst_classifier_type ~source:a ~target:st inner_ty
@@ -102,8 +107,19 @@ let rec judge_type ~stage ~tyenv tm =
   (* Misc *)
   | IntImmidiate _ -> TyInt
   | BoolImmidiate _ -> TyBool
-  | BinOp (Plus, t1, t2) | BinOp (Mult, t1, t2) | BinOp (Div, t1, t2) when (assert_type ~stage ~tyenv t1 TyInt = ()) -> TyInt
-  | BinOp (Lt, t1, t2) | BinOp (Lte, t1, t2) | BinOp (Gt, t1, t2) | BinOp (Gte, t1, t2) | BinOp(And, t1, t2) | BinOp(Or, t1, t2) -> TyBool
+  | (BinOp (Plus, t1, t2) | BinOp (Mult, t1, t2) | BinOp (Div, t1, t2))
+    when assert_type ~stage ~tyenv t1 TyInt = ()
+         && assert_type ~stage ~tyenv t2 TyInt = () -> TyInt
+  | BinOp (Lt, t1, t2)
+  | BinOp (Lte, t1, t2)
+  | BinOp (Gt, t1, t2)
+  | BinOp (Gte, t1, t2)
+  | BinOp (Eq, t1, t2)
+    when assert_type ~stage ~tyenv t1 TyInt = ()
+         && assert_type ~stage ~tyenv t2 TyInt = () -> TyBool
+  | (BinOp (And, t1, t2) | BinOp (Or, t1, t2) | BinOp (Eq, t1, t2))
+    when assert_type ~stage ~tyenv t1 TyBool = ()
+         && assert_type ~stage ~tyenv t2 TyBool = () -> TyBool
   | TmIf (t_cond, t_then, t_else) ->
     let _ = assert_type ~stage ~tyenv t_cond TyBool in
     let ty_then = judge_type ~tyenv ~stage t_then in
@@ -112,7 +128,7 @@ let rec judge_type ~stage ~tyenv tm =
       judge_type_equivalence ~tyenv ~stage ~index:(EqIndex.empty ()) (ty_then, ty_else)
     in
     ty_then
-  | TmLet(x, t1, t2) ->
+  | TmLet (x, t1, t2) ->
     let ty1 = judge_type ~tyenv ~stage t1 in
     judge_type ~stage ~tyenv:(tyenv *: (x, stage, ty1)) t2
   | _ as t -> raise (NoBindingException ("judge_type: " ^ (t |> string_of_tm)))
@@ -140,7 +156,7 @@ and judge_kind ~stage ~tyenv = function
         judge_type_equivalence ~tyenv ~stage ~index:(EqIndex.empty ()) (ty_arg, ty_arg')
       in
       kind_ret
-    | _ -> NotExpected( ty |> string_of_ty |> sprintf "failed to judge kind: %s") |> raise)
+    | _ -> NotExpected (ty |> string_of_ty |> sprintf "failed to judge kind: %s") |> raise)
   (* KA-Sigma *)
   | TySigma (x, ty_arg, ty_res) ->
     let _ = assert_kind ~stage ~tyenv ty_arg Proper in

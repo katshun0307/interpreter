@@ -1,9 +1,8 @@
 (tests
  (names
- syntax_test
- ; typing_test
- equivalence_test
- main_test
- eval_test
- )
+  syntax_test
+  ; typing_test
+  equivalence_test
+  main_test
+  eval_test)
  (libraries ounit core lfeqc))

@@ -58,7 +58,7 @@ let exec_core (tm : tm) ~(ty_annot : ty option) : exec_result =
   in *)
   let _ = ty_annot in
   let v = Eval.eval_term ~env:env.tm_env ~stage:(Stage.empty ()) tm in
-  let _ = if !debug then  v |> string_of_tm |> print_endline else () in
+  let _ = if !debug then v |> string_of_tm |> print_endline else () in
   { ty; tm = v }
 ;;
 
@@ -120,14 +120,15 @@ let show_result = function
 let rec repl () =
   print_string (sprintf "|-(%s) " (!stage |> Stage.to_string));
   Out_channel.flush stdout;
-  if not !debug then
-  (try
-     let p = Parser.toplevel Lexer.main (Lexing.from_channel In_channel.stdin) in
-     exec p |> show_result
-   with
-    | e  ->
-      e |> Exn.to_string |> print_endline)
-  else (let p = Parser.toplevel Lexer.main (Lexing.from_channel In_channel.stdin) in
+  if not !debug
+  then (
+    try
+      let p = Parser.toplevel Lexer.main (Lexing.from_channel In_channel.stdin) in
+      exec p |> show_result
+    with
+    | e -> e |> Exn.to_string |> print_endline)
+  else (
+    let p = Parser.toplevel Lexer.main (Lexing.from_channel In_channel.stdin) in
     exec p |> show_result);
   repl ()
 ;;
