@@ -159,8 +159,8 @@ let rec one_step_eval_opt tm ~stage ~env =
   (* E-Id *)
   | TmId t -> t |> one_step_eval_opt ~stage ~env >>| fun t' -> TmId t'
   (* E-IdpeelInnerR *)
-  | TmIdpeel (v1, x, t) when is_value ~stage v1 ->
-    t |> one_step_eval_opt ~stage ~env >>| fun t' -> TmIdpeel (v1, x, t')
+  (* | TmIdpeel (v1, x, t) when is_value ~stage v1 -> *)
+  (* t |> one_step_eval_opt ~stage ~env >>| fun t' -> TmIdpeel (v1, x, t') *)
   (* E-IdpeelInnerL *)
   | TmIdpeel (t1, x, t) ->
     t1 |> one_step_eval_opt ~stage ~env >>| fun t1' -> TmIdpeel (t1', x, t)

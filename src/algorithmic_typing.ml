@@ -44,7 +44,7 @@ let rec judge_type ~stage ~tyenv tm =
     let ty_fun = judge_type ~stage ~tyenv s in
     let ty_arg = judge_type ~stage ~tyenv t in
     (match ty_fun with
-    | TySigma (x, ty_arg', ty_res') ->
+    | TyPi (x, ty_arg', ty_res') ->
       let _check_equivalence =
         judge_type_equivalence ~tyenv ~stage ~index:(EqIndex.empty ()) (ty_arg, ty_arg')
       in
@@ -70,8 +70,9 @@ let rec judge_type ~stage ~tyenv tm =
   | TmIdpeel (t_eq, x, t_body) as tm ->
     let eq_ty = judge_type ~tyenv ~stage t_eq in
     (match eq_ty with
-    | TyApp (TyApp (Equality ty, _), _) ->
-      let c_ty = judge_type ~tyenv:(tyenv *: (x, stage, ty)) ~stage t_body in
+    | TyApp (TyApp (Equality ty, s1), _) ->
+      (* NOTE: uses [s1] (the first term of the equality type) to infer the type C x x id(x) *)
+      let c_ty = judge_type ~tyenv:(tyenv *: (x, stage, ty)) ~stage t_body |> subst_type ~source:x ~target:s1 in
       c_ty
     | _ -> raise_not_expected tm)
   (* TA-Quote *)
@@ -139,7 +140,7 @@ and judge_kind ~stage ~tyenv = function
         judge_type_equivalence ~tyenv ~stage ~index:(EqIndex.empty ()) (ty_arg, ty_arg')
       in
       kind_ret
-    | _ -> NotExpected( ty |> string_of_ty |> sprintf "failed to judge type: %s") |> raise)
+    | _ -> NotExpected( ty |> string_of_ty |> sprintf "failed to judge kind: %s") |> raise)
   (* KA-Sigma *)
   | TySigma (x, ty_arg, ty_res) ->
     let _ = assert_kind ~stage ~tyenv ty_arg Proper in
