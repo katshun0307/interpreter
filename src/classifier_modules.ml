@@ -77,7 +77,8 @@ end = struct
 
   let remove_classifier_exn a = function
     | classifier :: rest when classifier = a -> rest
-    | _ -> raise OperationFailed
+    | _ as stage -> printf "cannot remove classifier %s from stage %s\n" (string_of_classifier a) (to_string stage);
+      raise OperationFailed
   ;;
 
   let tail = Core.List.hd

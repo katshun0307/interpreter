@@ -5,20 +5,24 @@ open Algorithmic_equivalence
 open Tyenv.Tyenv
 
 let raise_not_expected(tm) =
-  NotExpected (sprintf "judge_type: entered unexpected match case for when typing %s" (string_of_tm tm)) |> raise
+  NotExpected (sprintf "judge_type: entered unexpected match case when typing %s" (string_of_tm tm)) |> raise
 
 (**
 Typing, kinding and well-formed kind judgements in algorithmic system. *)
 
 (** Judge type of the given [ty] under [stage] and [tyenv]. *)
-let rec judge_type ~stage ~tyenv = function
+
+let rec judge_type ~stage ~tyenv tm =
+  let _ = tm |> string_of_tm |> print_endline in
+  match tm with
   (* TA-Var *)
   | TmVariable x ->
     let ty = lookup_type x stage tyenv in
     assert_kind ~stage ~tyenv ty Proper;
     ty
   (* TA-Abs *)
-  | TmLam (x, ty_arg, t) -> judge_type ~stage ~tyenv:(tyenv *: (x, stage, ty_arg)) t
+  | TmLam (x, ty_arg, t) ->
+    TyPi(x, ty_arg, judge_type ~stage ~tyenv:(tyenv *: (x, stage, ty_arg)) t)
   (* TA-Pair *)
   | TmPair (t1, t2, (TySigma (x, ty_one, ty_two) as ty)) ->
     let ty_one' = judge_type ~stage ~tyenv t1 in
