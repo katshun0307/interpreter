@@ -88,6 +88,7 @@ let fun_of_op op i1 i2 =
   | Lte -> BoolImmidiate (i1 <= i2)
   | Gt -> BoolImmidiate (i1 > i2)
   | Gte -> BoolImmidiate (i1 >= i2)
+  | Eq -> BoolImmidiate (i1 = i2)
   | _ -> raise (EvalError "fun_of_op: invalid operation")
 ;;
 
@@ -95,6 +96,7 @@ let fun_of_lop op b1 b2 =
   match op with
   | And -> BoolImmidiate (b1 && b2)
   | Or -> BoolImmidiate (b1 || b2)
+  | Eq -> BoolImmidiate (b1 = b2)
   | _ -> raise (EvalError "fun_of_lop: invalid operation")
 ;;
 

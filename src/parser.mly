@@ -104,7 +104,7 @@ TYAExpr :
 
 // terms
 TMExpr :
-  | e=OrExpr { e }
+  | e=EqExpr { e }
   | LET x=UserID EQUAL tm1=TMExpr IN tm2=TMExpr { TmLet(x, tm1, tm2) }
   | LET REC f=UserID EQUAL tm1=TMExpr IN tm2=TMExpr { TmLetRec(f, tm1, tm2) }
   | LAM x=UserID COLON arg_ty=TYExpr DOT tm=TMExpr { TmLam(x, arg_ty, tm) }
@@ -115,6 +115,10 @@ TMExpr :
 // KindExpr :
 //   | PROPER { Proper }
 //   | PI x=UserID COLON ty=TYExpr DOT e=KindExpr { KindPi(x, ty, e) }
+
+EqExpr:
+  | e1=OrExpr EQUAL e2=OrExpr { BinOp(Eq, e1, e2) }
+  | e=OrExpr { e }
 
 OrExpr:
   | e1=AndExpr OR e2=AndExpr { BinOp(Or, e1, e2) }

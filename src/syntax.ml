@@ -66,6 +66,7 @@ type op =
   | Lte
   | Gt
   | Gte
+  | Eq
 [@@deriving show]
 
 type tm =
@@ -334,6 +335,7 @@ let string_of_op = function
   | Lte -> "<="
   | Gt -> ">"
   | Gte -> ">="
+  | Eq -> "="
 ;;
 
 let rec string_of_kind = function
