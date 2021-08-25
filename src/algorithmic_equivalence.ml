@@ -11,8 +11,10 @@ exception NotEquivalent
 (** Raised if the two terms are not alpha equivalent *)
 exception NotAlphaEquivalent of tm * tm
 
+exception NotAlphaEquivalentType of ty * ty
+
 (** Checks if the two terms are alpha equivalent. Raises [NotAlphaEquivalent (tm1, tm2)] if not. *)
-let judge_alpha_equivalence =
+let rec judge_alpha_equivalence ?(var_pair = []) ?(classifier_pair = []) (tm1, tm2) =
   let rec loop (tm1, tm2) ~var_pair ~classifier_pair =
     let loop_default = loop ~var_pair ~classifier_pair in
     match tm1, tm2 with
@@ -25,15 +27,16 @@ let judge_alpha_equivalence =
     | BinOp (op1, tml1, tml2), BinOp (op2, tmr1, tmr2) when op1 = op2 ->
       loop_default (tml1, tmr1);
       loop_default (tml2, tmr2)
-    | TmLam (tvl, _, tml), TmLam (tvr, _, tmr) ->
-      loop (tml, tmr) ~var_pair:((tvl, tvr) :: var_pair) ~classifier_pair
+    | TmLam (tvl, tyargl, tml), TmLam (tvr, tyargr, tmr) ->
+      loop (tml, tmr) ~var_pair:((tvl, tvr) :: var_pair) ~classifier_pair;
+      judge_alpha_equivalence_of_type ~var_pair ~classifier_pair (tyargl, tyargr)
     | TmApp (tml1, tml2), TmApp (tmr1, tmr2) ->
       loop_default (tml1, tmr1);
       loop_default (tml2, tmr2)
-    | TmPair (tml1, tml2, _), TmPair (tmr1, tmr2, _) ->
-      (* TODO: define equivalence for pairs rigidly *)
+    | TmPair (tml1, tml2, tyl), TmPair (tmr1, tmr2, tyr) ->
       loop_default (tml1, tmr1);
-      loop_default (tml2, tmr2)
+      loop_default (tml2, tmr2);
+      judge_alpha_equivalence_of_type ~var_pair ~classifier_pair (tyl, tyr)
     | TmFst t1, TmFst t2 | TmSnd t1, TmSnd t2 -> loop_default (t1, t2)
     | (Quote (a, tm1), Quote (b, tm2) | Escape (a, tm1), Escape (b, tm2))
       when List.exists classifier_pair ~f:(( = ) (a, b)) -> loop_default (tm1, tm2)
@@ -60,10 +63,43 @@ let judge_alpha_equivalence =
       loop_default (cond_l, cond_r);
       loop_default (consequence_l, consequence_r);
       loop_default (alternative_l, alternative_r)
-    (* TODO: TmLetRec *)
     | tm1, tm2 -> raise (NotAlphaEquivalent (tm1, tm2))
   in
-  loop ~var_pair:[] ~classifier_pair:[]
+  loop ~var_pair ~classifier_pair (tm1, tm2)
+
+(** Checks if the two types are alpha equivalent. Raises [NotAlphaEquivalentType (tm1, tm2)] if not. *)
+and judge_alpha_equivalence_of_type ?(var_pair = []) ?(classifier_pair = []) (ty1, ty2) =
+  let loop_default = judge_alpha_equivalence_of_type ~var_pair ~classifier_pair in
+  match ty1, ty2 with
+  | TyVar (x, _), TyVar (y, _) when x = y -> ()
+  | TyFamily x, TyFamily y when x = y -> ()
+  | TyInt, TyInt | TyBool, TyBool -> ()
+  | TyPi (x, tyl1, tyl2), TyPi (y, tyr1, tyr2)
+  | TySigma (x, tyl1, tyl2), TySigma (y, tyr1, tyr2) ->
+    let _ = loop_default (tyl1, tyr1) in
+    let _ =
+      judge_alpha_equivalence_of_type
+        ~var_pair:((x, y) :: var_pair)
+        ~classifier_pair
+        (tyl2, tyr2)
+    in
+    ()
+  | TyApp (tyl, tml), TyApp (tyr, tmr) ->
+    let _ = loop_default (tyl, tyr) in
+    let _ = judge_alpha_equivalence ~var_pair ~classifier_pair (tml, tmr) in
+    ()
+  | Equality tyl, Equality tyr -> loop_default (tyl, tyr)
+  | TyQuote (cl, tyl), TyQuote (cr, tyr)
+    when classifier_pair |> List.exists ~f:(( = ) (cl, cr)) -> loop_default (tyl, tyr)
+  | TyGen (cl, tyl), TyGen (cr, tyr) ->
+    let _ =
+      judge_alpha_equivalence_of_type
+        ~var_pair
+        ~classifier_pair:((cl, cr) :: classifier_pair)
+        (tyl, tyr)
+    in
+    ()
+  | _, _ -> raise (NotAlphaEquivalentType (ty1, ty2))
 ;;
 
 (** Judge term equivalence by using QA_ANF rule. *)

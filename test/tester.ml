@@ -1,8 +1,12 @@
 open OUnit
 open Core
 module Main = Lfeqc
-module P = Lfeqc__.Parser
 module L = Lfeqc__.Lexer
+module P = Lfeqc__.Parser
+module S = Lfeqc__.Syntax
+module T = Lfeqc__.Algorithmic_typing
+module E = Lfeqc__.Eval
+module Eq = Lfeqc__.Algorithmic_equivalence
 
 exception TestError
 exception NotImplemented
@@ -33,7 +37,9 @@ let id x = x
 
 let parse s =
   try P.toplevel L.main (Lexing.from_string (s ^ ";;")) with
-  | _ -> Term (TmDummy (System "failed_to_parse"))
+  | _ ->
+    "failed to parse_term: " ^ s |> prerr_endline;
+    raise TestError
 ;;
 
 let parse_term s =
@@ -41,7 +47,9 @@ let parse_term s =
   |> parse
   |> function
   | Term t -> t
-  | _ -> raise TestError
+  | _ ->
+    "failed to parse_term: " ^ s |> prerr_endline;
+    raise TestError
 ;;
 
 let parse_type s =

@@ -1,7 +1,6 @@
 open Tester
-module S = Lfeqc__.Syntax
-module E = Lfeqc__.Algorithmic_equivalence
-module C = Lfeqc__.Tyenv.Tyenv
+open Lfeqc__.Tyenv
+open Lfeqc__.Classifier_modules
 
 let () =
   let open S in
@@ -9,10 +8,10 @@ let () =
   ; func =
       (fun x ->
         try
-          E.judge_alpha_equivalence x;
+          Eq.judge_alpha_equivalence x;
           true
         with
-        | E.NotAlphaEquivalent _ -> false)
+        | Eq.NotAlphaEquivalent _ -> false)
   ; prep = (fun x -> x)
   ; ishow = (fun (x, y) -> string_of_tm x ^ ", " ^ string_of_tm y)
   ; oshow = string_of_bool
@@ -27,22 +26,26 @@ let () =
       ; { input = "3", "y"; expected = false }
       ; { input = "\\x: Int. 3 + x", "\\y:Int. 3 + y"; expected = true }
       ; { input = "\\x: Int. 3 + x", "\\y:Int. 3 + x"; expected = false }
-      ; { input = "\\x: eq{int} (3+3) 6. x", "\\x: eq{int} (3+3) 6. x"; expected = true }
-      ; { input = "\\x: eq{int} 6 6. x", "\\x: eq{int} (3+3) 6. x"; expected = true }
+      ; { input = "\\x: (eq{int} (3+3) 6). x", "\\x: (eq{int} (3+3) 6). x"
+        ; expected = true
+        }
+      ; { input = "\\x: (eq{int} 6 6). x", "\\x: (eq{int} 6 6). x"; expected = true }
       ]
   }
   |> run_test_case
-  |> ignore
-;;
-
-(* { name = "algorithmic term equivalence"
+  |> ignore;
+  { name = "algorithmic term equivalence"
   ; func =
       (fun x ->
         try
-          E.judge_term_equivalence (C.empty ()) 0 0 x;
+          Eq.judge_term_equivalence
+            ~tyenv:(Tyenv.empty ())
+            ~stage:(Stage.empty ())
+            ~index:(EqIndex.empty ())
+            x;
           true
         with
-        | E.NotAlphaEquivalent _ -> false)
+        | Eq.NotAlphaEquivalent _ -> false)
   ; prep = (fun x -> x)
   ; ishow = (fun (x, y) -> string_of_tm x ^ ", " ^ string_of_tm y)
   ; oshow = string_of_bool
@@ -51,29 +54,73 @@ let () =
   ; cmp = ( = )
   ; dataset =
       [ { input = "3", "3"; expected = true }
-      ; { input = "x", "x"; expected = true }
-      ; { input = "3", "y"; expected = false }
-      ; { input = "lam x: Int. 3 + x", "lam y:Int. 3 + y"; expected = true }
-      ; { input = "lam x: Int. 3 + x", "lam y:Int. 3 + x"; expected = false }
+      ; { input = "\\x: Int. 3 + x", "\\y:Int. 3 + y"; expected = true }
+      ; { input = "\\x: Int. 3 + x", "\\y:Int. 3 + x"; expected = false }
+      ; { input = "/\\_a. >_a (3 + 5)", "/\\_ a. >_a (3 + 5)"; expected = true }
       ; { input =
-            ( "{3, next(3 + 5):: sigma x:int. int code}"
-            , "{3, next(3 + 5):: sigma x:int. int code}" )
+            ( "/\\_a. {3, >_a (3 + 5):: sum x:int. |>_a int}"
+            , "/\\_a. {3, >_a (3 + 5):: sum x:int. |>_a int}" )
         ; expected = true
         }
       ; { input =
-            ( "{3, next(3 + 5):: sigma x:int. int code}"
-            , "{3, next(3 + 8):: sigma x:int. int code}" )
+            ( "{3, >_a (3 + 5):: sum x:int. |>_a int}"
+            , "{3, >_a (3 + 8):: sum x:int. |>_a int}" )
         ; expected = false
         }
-      ; { input = "lam x: eq{int} (3+3) 6. x", "lam x: eq{int} (3+3) 6. x"
+      ; { input = "\\x: (eq{int} (3+3) 6). x", "\\x: (eq{int} (3+3) 6). x"
         ; expected = true
         }
-      ; { input = "lam x: eq{int} 6 6. x", "lam x: eq{int} (3+3) 6. x"; expected = true }
-      ; { input = "lam x: eq{int} (3+3) 6. x", "lam x: eq{int} 7 7. x"; expected = false }
+      ; { input = "\\x: (eq{int} 6 6). x", "\\x: (eq{int} (3+3) 6). x"; expected = true }
+      ; { input = "\\x: (eq{int} (3+3) 6). x", "\\x: (eq{int} 7 7). x"; expected = false }
       ]
   }
   |> run_test_case
   |> ignore;
+  { name = "algorithmic term equivalence in non-empty index"
+  ; func =
+      (fun x ->
+        try
+          Eq.judge_term_equivalence
+            ~tyenv:(Tyenv.empty ())
+            ~stage:(Stage.empty () |> Stage.add_classifier (Classifier "a"))
+            ~index:(EqIndex.empty ())
+            x;
+          true
+        with
+        | _ -> false)
+  ; prep = (fun x -> x)
+  ; ishow = (fun (x, y) -> string_of_tm x ^ ", " ^ string_of_tm y)
+  ; oshow = string_of_bool
+  ; iprep = (fun (x, y) -> parse_term x, parse_term y)
+  ; oprep = id
+  ; cmp = ( = )
+  ; dataset =
+      [ { input = "3", "3"; expected = true }
+      ; { input = "x", "x"; expected = false }
+      ; { input = "3", "y"; expected = false }
+      ; { input = "\\x: Int. 3 + x", "\\y:Int. 3 + y"; expected = true }
+      ; { input = "\\x: Int. 3 + x", "\\y:Int. 3 + x"; expected = false }
+      ; { input =
+            ( "/\\_a. {3, >_a (3 + 5):: sum x:int. |>_a int}"
+            , "/\\_a. {3, >_a (3 + 5):: sum x:int. |>_a int}" )
+        ; expected = true
+        }
+      ; { input =
+            ( "{3, >_a (3 + 5):: sum x:int. int code}"
+            , "{3, >_a (3 + 8):: sum x:int. int code}" )
+        ; expected = false
+        }
+      ; { input = "\\x: (eq{int} (3+3) 6). x", "\\x: (eq{int} (3+3) 6). x"
+        ; expected = true
+        }
+      ; { input = "\\x: (eq{int} 6 6). x", "\\x: (eq{int} (3+3) 6). x"; expected = true }
+      ; { input = "\\x: (eq{int} (3+3) 6). x", "\\x: (eq{int} 7 7). x"; expected = false }
+      ]
+  }
+  |> run_test_case
+  |> ignore
+;;
+(*
   { name = "algorithmic reduction"
   ; func = E.alogrithmic_reduction 0
   ; prep = (fun x -> x)

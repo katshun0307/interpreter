@@ -1,7 +1,5 @@
 open Core
 open Tester
-module E = Lfeqc__.Eval
-module S = Lfeqc__.Syntax
 module Cl = Lfeqc__.Classifier_modules
 module Env = Lfeqc__.Environment.Environment
 
