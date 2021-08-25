@@ -162,7 +162,6 @@ AExpr :
   | FALSE  { BoolImmidiate false }
   | e=AExpr DOT FST { TmFst e }
   | e=AExpr DOT SND { TmSnd e }
-  | RUN e=AExpr { Run(e) } (* deprecated *)
   | EQID LCURLY tm=TMExpr RCURLY { TmId(tm) }
   | LCURLY t1=TMExpr COMMA t2=TMExpr DCOLON SIGMA x=UserID COLON s=TYExpr DOT t=TYExpr RCURLY { TmPair(t1, t2, TySigma(x, s, t)) }
   | LPAREN e=TMExpr RPAREN { e }

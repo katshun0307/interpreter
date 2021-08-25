@@ -135,7 +135,7 @@ let rec one_step_eval_opt tm ~stage ~env =
     (if b then body_if else body_else) |> Option.some
   | TmLet (x, v1, t2) when is_value ~stage v1 ->
     subst_term ~source:x ~target:v1 t2 |> Option.some
-  (* === Non-congruent Rules === *)
+  (* === Congruence Rules === *)
   (* E-Abs *)
   | TmLam (x, ty_arg, t) when Stage.is_empty stage |> not ->
     one_step_eval_opt ~stage ~env t >>| fun t' -> TmLam (x, ty_arg, t')
