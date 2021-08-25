@@ -124,8 +124,11 @@ let rec one_step_eval_opt tm ~stage ~env =
   | TmIdpeel (TmId y, x, t) when Stage.is_empty stage ->
     subst_term ~source:x ~target:y t |> Option.some
   (* E-Csp *)
-  (* TODO: check for free variables inside csp *)
-  | Csp (a, t) -> Some t
+  | Csp (a, t) ->
+    let fv = freevars t in
+    if fv = []
+    then Some t
+    else raise (EvalError ("CSP: free variables found for " ^ string_of_tm t))
   (* Misc *)
   | BinOp (op, IntImmidiate i1, IntImmidiate i2) when Stage.is_empty stage ->
     fun_of_op op i1 i2 |> Option.some

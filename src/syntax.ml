@@ -289,6 +289,47 @@ and subst_classifier_type ~source ~target =
     ~mapty:(f_for_subst_classifier_type ~source ~target)
 ;;
 
+(** Find all free term variables for term *)
+let rec freevars tm =
+  match tm with
+  | TmVariable x -> [ x ]
+  | IntImmidiate _ | BoolImmidiate _ -> []
+  | TmLam (x, _, t) -> freevars t |> List.filter ~f:(fun y -> not (y = x))
+  | BinOp (_, t1, t2) | TmApp (t1, t2) | TmPair (t1, t2, _) -> freevars t1 @ freevars t2
+  | TmFst t
+  | TmSnd t
+  | Quote (_, t)
+  | Escape (_, t)
+  | Csp (_, t)
+  | Gen (_, t)
+  | GenApp (t, _)
+  | TmId t -> freevars t
+  | TmIdpeel (t1, tmv', tm2) ->
+    freevars t1 @ (freevars tm2 |> List.filter ~f:(fun y -> not (y = tmv')))
+  | TmIf (tm1, tm2, tm3) -> freevars tm1 @ freevars tm2 @ freevars tm3
+  | TmLet (_, _tm1, tm2) -> freevars tm2
+  | _ -> raise NotImplemented
+;;
+
+(** Find all free classifiers in term *)
+let rec free_classifiers tm =
+  match tm with
+  | TmVariable _ -> []
+  | IntImmidiate _ | BoolImmidiate _ -> []
+  | Quote (a, t) | Escape (a, t) | Csp (a, t) -> a :: free_classifiers t
+  | Gen (a, t) -> free_classifiers t |> List.filter ~f:(fun y -> not (y = a))
+  | GenApp (t, stage) -> free_classifiers t @ Stage.to_list stage
+  | TmLam (x, _, t) -> free_classifiers t
+  | BinOp (_, t1, t2) | TmApp (t1, t2) | TmPair (t1, t2, _) ->
+    free_classifiers t1 @ free_classifiers t2
+  | TmFst t | TmSnd t | TmId t -> free_classifiers t
+  | TmIdpeel (t1, tmv', tm2) -> free_classifiers t1 @ free_classifiers tm2
+  | TmIf (tm1, tm2, tm3) ->
+    free_classifiers tm1 @ free_classifiers tm2 @ free_classifiers tm3
+  | TmLet (_, _tm1, tm2) -> free_classifiers tm2
+  | _ -> raise NotImplemented
+;;
+
 (** Check if type variable [tv] does not occur in type.
   raise [OccurCheckError] if it occurs. *)
 let rec tyvar_occurcheck tv = function
