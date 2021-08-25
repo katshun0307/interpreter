@@ -16,7 +16,7 @@ t ::= [terms]
 	| t op t
 	| \x:T.t
 	| t1 t2
-	| (t1, t2, T)
+	| {t1, t2 :: T}
 	| t.fst
 	| t.snd
 	| id{t}
