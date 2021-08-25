@@ -47,14 +47,15 @@ let rec algorithmic_reduction_axioms tm ~index ~env =
     let t' =
       t
       |> generic_map_term
-           ~map:(algorithmic_reduction_axioms ~index:(EqIndex.add_demote index a) ~env)
+           ~map:(algorithmic_reduction_axioms ~index:(index |> EqIndex.add_demote a) ~env)
     in
     Some (Quote (a, t'))
   | Escape (a, t) ->
     let t' =
       t
       |> generic_map_term
-           ~map:(algorithmic_reduction_axioms ~index:(EqIndex.add_promote index a) ~env)
+           ~map:
+             (algorithmic_reduction_axioms ~index:(index |> EqIndex.add_promote a) ~env)
     in
     Some (Escape (a, t'))
   | GenApp (Gen (a, t), stage) ->

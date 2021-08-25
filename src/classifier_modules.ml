@@ -18,6 +18,7 @@ module rec Stage : sig
 
   val empty : unit -> t
   val from_list : classifier list -> t
+  val to_list : t -> classifier list
   val to_string : t -> string
   val to_index : t -> EqIndex.t
 
@@ -51,6 +52,7 @@ end = struct
 
   let empty () = []
   let from_list l = l
+  let to_list l = l
 
   let to_string = function
     | [] -> "@_"
@@ -64,7 +66,7 @@ end = struct
   let to_index stage =
     List.fold_right
       stage
-      ~f:(fun accum classifier -> accum |> EqIndex.add_promote classifier)
+      ~f:(fun classifier accum -> accum |> EqIndex.add_promote classifier)
       ~init:(EqIndex.empty ())
   ;;
 
@@ -111,8 +113,8 @@ and EqIndex : sig
 
   val empty : unit -> t
   val to_string : t -> string
-  val add_promote : t -> classifier -> t
-  val add_demote : t -> classifier -> t
+  val add_promote : classifier -> t -> t
+  val add_demote : classifier -> t -> t
   val is_empty : t -> bool
 
   (** Concatenate stage and equivalence index. [concat_to_stage stage index] calculates [stage ++ index] *)
@@ -148,11 +150,10 @@ end = struct
     "(" ^ content ^ ")"
   ;;
 
-  let add_promote index classifier = Promote classifier :: index
-  let add_demote index classifier = Demote classifier :: index
+  let add_promote classifier index = Promote classifier :: index
+  let add_demote classifier index = Demote classifier :: index
   let is_empty index = index = []
 
-  (* TODO: check form of index *)
   let rec is_zero_or_positive = function
     | Promote _ :: rest -> is_zero_or_positive rest
     | Demote _ :: _rest -> false
