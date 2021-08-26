@@ -1,0 +1,15 @@
+(* Some code generator *)
+let gen_code = \x:int. (/\_a. >_a (3 * %_a x));;
+
+(* Generate code *)
+gen_code 4;;
+
+(* Eval generated code *)
+(gen_code 4) @_;;
+
+(* Should pass this *)
+\x:int. id{x};;
+
+(* Prove that generated code calculates the triple of x *)
+(* Should have type: pi x:int. eq{int} ((gen_code x) @_) (3 * x) *)
+\x:int. id{(gen_code x) @_};;
