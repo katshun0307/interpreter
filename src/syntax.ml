@@ -172,8 +172,8 @@ let rec generic_map_term tm ~map =
     | Csp (a, t) -> Csp (a, map_inner t)
     | Gen (a, t) -> Gen (a, map_inner t)
     | GenApp (tm, stage) -> GenApp (map_inner tm, stage)
-    | TmIdpeel (tm1, tmv', tm2) -> TmIdpeel (map_inner tm1, tmv', map_inner tm2)
     | TmId tm1 -> TmId (map_inner tm1)
+    | TmIdpeel (tm1, tmv', tm2) -> TmIdpeel (map_inner tm1, tmv', map_inner tm2)
     | TmLam (tmv', ty, tm1) -> TmLam (tmv', ty, map_inner tm1)
     | TmDummy tv -> TmDummy tv
     | TmLet (tv, tm1, tm2) -> TmLet (tv, map_inner tm1, map_inner tm2)
@@ -408,8 +408,7 @@ and string_of_tm = function
   | Escape (a, t) -> sprintf "◀_%s %s" (a |> string_of_classifier) (t |> string_of_tm)
   | Csp (a, t) -> sprintf "%%_%s %s" (a |> string_of_classifier) (t |> string_of_tm)
   | Gen (a, t) -> sprintf "Λ%s. %s" (a |> string_of_classifier) (t |> string_of_tm)
-  | GenApp (tm, stage) ->
-    sprintf "/\\_%s %s" (tm |> string_of_tm) (stage |> Stage.to_string)
+  | GenApp (tm, stage) -> sprintf "%s %s" (tm |> string_of_tm) (stage |> Stage.to_string)
   | TmId t -> sprintf "id(%s)" (string_of_tm t)
   | TmIdpeel (t1, tv, t2) ->
     sprintf "idpeel(%s, (%s)%s)" (string_of_tm t1) (string_of_tmvar tv) (string_of_tm t2)

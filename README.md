@@ -58,7 +58,7 @@ stage ::= [list of classifiers]
 + `(/\_x. >_x 4) @_;;`
 + `(/\_x. >_x 4) @_a_b;;`
 + `>_a (\x:int. >_a %_a x);;`
-+ `(lam x: int. x + 4) 42;;`
++ `(\x: int. x + 4) 42;;`
 + `id{3}`
 + `idpeel{3, (x) x + 3}`
 + `idpeel{id{3}, (x) \m: (eq{int} x 3). m}`

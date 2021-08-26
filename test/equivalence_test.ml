@@ -106,8 +106,8 @@ let () =
         ; expected = true
         }
       ; { input =
-            ( "{3, >_a (3 + 5):: sum x:int. int code}"
-            , "{3, >_a (3 + 8):: sum x:int. int code}" )
+            ( "{3, >_a (3 + 5):: sum x:int. |>_a code}"
+            , "{3, >_a (3 + 8):: sum x:int. |>_a code}" )
         ; expected = false
         }
       ; { input = "\\x: (eq{int} (3+3) 6). x", "\\x: (eq{int} (3+3) 6). x"
