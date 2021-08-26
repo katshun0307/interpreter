@@ -4,6 +4,14 @@
 ```
 $ make
 $ ledit ./lfeqc.exe
+$ ledit ./lfeqc.exe -load programs/hogefuga.lfeqc
+```
+
+```
+Usage: ./lfeqc.exe [-test] [-load <filename>] [-debug]
+  -load load   program before starting REPL
+  -debug debug (output parse tree)
+  -help        Display this list of options
 ```
 
 ## Syntax
