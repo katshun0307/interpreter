@@ -11,7 +11,9 @@ let rec algorithmic_reduction_axioms tm ~index ~env =
   | TmVariable x when EqIndex.is_empty index ->
     (match E.lookup x env with
     | Some v -> Some v
+    | None when true -> Some tm
     | None ->
+      (* NOTE: Will not run. Algorithmic reduction does nothing to undefined vars. *)
       raise
         (EvalError
            (Printf.sprintf
@@ -27,17 +29,16 @@ let rec algorithmic_reduction_axioms tm ~index ~env =
   | BinOp (op, BoolImmidiate b1, BoolImmidiate b2) when EqIndex.allow_beta_reduction index
     -> fun_of_lop op b1 b2 |> Option.some
   (* apply function to value *)
-  | TmApp (LamV (x, _, tm_body, closure_env), tm_t)
+  (* | TmApp (LamV (x, _, tm_body, closure_env), tm_t)
     when EqIndex.allow_beta_reduction index ->
     let env' = E.extend x tm_t closure_env in
     let tm' = algoritmic_reduction_term ~env:env' ~index tm_body in
-    tm' |> Option.some
-  | TmApp (ProcV (x, tm1, env'), tm2) ->
+    tm' |> Option.some *)
+  (* | TmApp (ProcV (x, tm1, env'), tm2) ->
     let tm' = subst_term ~source:x ~target:tm2 tm1 in
-    algoritmic_reduction_term ~env:!env' ~index tm' |> Option.some
-    (* | TmApp (TmLam (x, _, t1), t2) when EqIndex.is_empty index -> *)
-    (* Some (subst_term ~source:x ~target:t2 t1) *)
-    (* Pair operations *)
+    algoritmic_reduction_term ~env:!env' ~index tm' |> Option.some *)
+  | TmApp (TmLam (x, _, t1), t2) when EqIndex.allow_beta_reduction index ->
+    Some (subst_term ~source:x ~target:t2 t1) (* Pair operations *)
   | TmFst (TmPair (t1, _, _)) -> Some t1
   | TmSnd (TmPair (_, t2, _)) -> Some t2
   (* Stage operations *)
@@ -81,18 +82,18 @@ and algoritmic_reduction_type ~index ~env =
 ;;
 
 (** Algorithmic normal form of term [tm] with [~index]. *)
-let algorithmic_normal_form ~index =
+let algorithmic_normal_form ~index ?(env = E.empty ()) =
   let rec loop tm =
-    let tm' = algoritmic_reduction_term tm ~index ~env:(E.empty ()) in
+    let tm' = algoritmic_reduction_term tm ~index ~env in
     if tm' = tm then tm else loop tm'
   in
   loop
 ;;
 
 (** Algorithmic normal form of type [ty] with [~index]. *)
-let algorithmic_normal_form_type ~index =
+let algorithmic_normal_form_type ~index ?(env = E.empty ()) =
   let rec loop ty =
-    let ty' = algoritmic_reduction_type ty ~index ~env:(E.empty ()) in
+    let ty' = algoritmic_reduction_type ty ~index ~env in
     if ty' = ty then ty else loop ty'
   in
   loop

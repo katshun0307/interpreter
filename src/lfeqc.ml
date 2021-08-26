@@ -50,6 +50,13 @@ type exec_result =
 (** Return type and reduced value of term. *)
 let exec_core (tm : tm) ~(ty_annot : ty option) : exec_result =
   let ty = Algorithmic_typing.judge_type ~tyenv:!tyenv ~stage:!stage tm in
+  (* NOTE: apply algorithmic reduction on terms in dependent type *)
+  let ty =
+    Algorithmic_reduction.algorithmic_normal_form_type
+      ~index:(EqIndex.empty ())
+      ~env:env.tm_env
+      ty
+  in
   let _ = if !debug then ty |> string_of_ty |> print_endline else () in
   (* let _ =
     match ty_annot with
