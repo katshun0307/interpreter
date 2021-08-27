@@ -109,18 +109,15 @@ let rec judge_type ~stage ~tyenv tm =
   | IntImmidiate _ -> TyInt
   | BoolImmidiate _ -> TyBool
   | (BinOp (Plus, t1, t2) | BinOp (Mult, t1, t2) | BinOp (Div, t1, t2))
-    when assert_type ~stage ~tyenv t1 TyInt = ()
-         && assert_type ~stage ~tyenv t2 TyInt = () -> TyInt
+    when has_type ~stage ~tyenv t1 TyInt && has_type ~stage ~tyenv t2 TyInt -> TyInt
   | BinOp (Lt, t1, t2)
   | BinOp (Lte, t1, t2)
   | BinOp (Gt, t1, t2)
   | BinOp (Gte, t1, t2)
   | BinOp (Eq, t1, t2)
-    when assert_type ~stage ~tyenv t1 TyInt = ()
-         && assert_type ~stage ~tyenv t2 TyInt = () -> TyBool
+    when has_type ~stage ~tyenv t1 TyInt && has_type ~stage ~tyenv t2 TyInt -> TyBool
   | (BinOp (And, t1, t2) | BinOp (Or, t1, t2) | BinOp (Eq, t1, t2))
-    when assert_type ~stage ~tyenv t1 TyBool = ()
-         && assert_type ~stage ~tyenv t2 TyBool = () -> TyBool
+    when has_type ~stage ~tyenv t1 TyBool && has_type ~stage ~tyenv t2 TyBool -> TyBool
   | TmIf (t_cond, t_then, t_else) ->
     let _ = assert_type ~stage ~tyenv t_cond TyBool in
     let ty_then = judge_type ~tyenv ~stage t_then in
@@ -194,8 +191,11 @@ and validate_kind ~stage ~tyenv = function
     ()
   | KindVar _ -> raise NotImplemented
 
+and has_type ~stage ~tyenv tm ty = judge_type ~stage ~tyenv tm = ty
+and has_kind ~stage ~tyenv ty kind = judge_kind ~stage ~tyenv ty = kind
+
 (** Shorthand function to assert result of [judge_type]. *)
-and assert_type ~stage ~tyenv tm ty = assert (judge_type ~stage ~tyenv tm = ty)
+and assert_type ~stage ~tyenv tm ty = assert (has_type ~stage ~tyenv tm ty)
 
 (** Shorthand function to assert result of [judge_kind]. *)
-and assert_kind ~stage ~tyenv ty kind = assert (judge_kind ~stage ~tyenv ty = kind)
+and assert_kind ~stage ~tyenv ty kind = assert (has_kind ~stage ~tyenv ty kind)
