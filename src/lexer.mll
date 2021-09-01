@@ -22,7 +22,9 @@ let reservedWords = [
   ("prod", Parser.PI);
   ("run", Parser.RUN);
   (* ("code", Parser.CODE); *)
+  ("has", Parser.HAS);
   ("type", Parser.TYPE);
+  ("kind", Parser.KIND);
   ("print_tyenv", Parser.PRCONT);
   ("change_stage", Parser.CHST);
 ]

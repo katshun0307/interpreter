@@ -150,3 +150,27 @@ and judge_kind_equivalence ~tyenv ~stage ~index = function
       (k1, subst_kind ~source:x2 ~target:(TmVariable x1) k2)
   | _ -> raise NotEquivalent
 ;;
+
+let is_equivalent_term ~tyenv ~stage ~index (tm1, tm2) =
+  try
+    let _ = judge_term_equivalence ~tyenv ~stage ~index (tm1, tm2) in
+    true
+  with
+  | NotEquivalent -> false
+;;
+
+let is_equivalent_type ~tyenv ~stage ~index (ty1, ty2) =
+  try
+    let _ = judge_type_equivalence ~tyenv ~stage ~index (ty1, ty2) in
+    true
+  with
+  | NotEquivalent -> false
+;;
+
+let is_equivalent_kind ~tyenv ~stage ~index (kind1, kind2) =
+  try
+    let _ = judge_kind_equivalence ~tyenv ~stage ~index (kind1, kind2) in
+    true
+  with
+  | NotEquivalent -> false
+;;

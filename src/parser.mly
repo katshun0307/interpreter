@@ -7,7 +7,8 @@ open Classifier_modules
 %token LPAREN RPAREN SEMISEMI
 %token LAM COLON DOT PI DCOLON
 %token LCURLY RCURLY COMMA SIGMA
-%token SHARP PRCONT CHST EOF UNDERBAR
+// meta
+%token SHARP PRCONT CHST EOF UNDERBAR HAS TYPE KIND
 // terms
 %token LET IN IF THEN ELSE REC
 %token EQ EQID EQIDPEEL EQUIV
@@ -21,9 +22,7 @@ open Classifier_modules
 %token OR AND
 // types
 %token INT BOOL
-%token TYPE
 %token FORALL QUOTETYPE
-	// %token CODE CIRC
 // kinds
 %token PROPER
 
@@ -77,8 +76,8 @@ ClassifierExpr:
 
 CommandExpr :
   | PRCONT { PrintTyenv }
-  | CHST i=INTV { ChangeStage i }
-
+  | tm=TMExpr HAS TYPE ty=TYExpr { HasType(tm, ty) }
+  | ty=TYExpr HAS KIND k=KindExpr { HasKind(ty, k) }
 
 typing:
   | e=TYExpr SEMISEMI { e }
@@ -112,9 +111,9 @@ TMExpr :
   | EQIDPEEL LCURLY tm1=TMExpr COMMA LPAREN x=UserID RPAREN tm2=TMExpr RCURLY { TmIdpeel(tm1, x, tm2) }
   | IF tm1=TMExpr THEN tm2=TMExpr ELSE tm3=TMExpr { TmIf(tm1, tm2, tm3) }
 
-// KindExpr :
-//   | PROPER { Proper }
-//   | PI x=UserID COLON ty=TYExpr DOT e=KindExpr { KindPi(x, ty, e) }
+KindExpr :
+  | PROPER { Proper }
+  | PI x=UserID COLON ty=TYExpr DOT e=KindExpr { KindPi(x, ty, e) }
 
 EqExpr:
   | e1=OrExpr EQUAL e2=OrExpr { BinOp(Eq, e1, e2) }

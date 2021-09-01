@@ -121,7 +121,9 @@ type kind =
 
 type repl_options =
   | PrintTyenv
-  | ChangeStage of int
+  | ChangeStage of Stage.t
+  | HasType of tm * ty
+  | HasKind of ty * kind
 [@@deriving show]
 
 (** User input to the REPL is decoded into this type *)

@@ -69,6 +69,21 @@ let exec_core (tm : tm) ~(ty_annot : ty option) : exec_result =
   { ty; tm = v }
 ;;
 
+let exec_meta = function
+  | ChangeStage st -> stage := st
+  | PrintTyenv -> !tyenv |> Tyenv.string_of_tyenv |> print_endline
+  | HasType (tm, ty) ->
+    let open Algorithmic_typing in
+    let flag = has_type ~tyenv:!tyenv ~stage:!stage tm ty in
+    flag |> string_of_bool |> print_endline
+  | HasKind (ty, kind) ->
+    let open Algorithmic_typing in
+    let flag = has_kind ~tyenv:!tyenv ~stage:!stage ty kind in
+    flag |> string_of_bool |> print_endline
+;;
+
+(* let flag = has_type *)
+
 (** Execute parsed program *)
 let exec p =
   if !debug then print_string (show_program p ^ "\n") else ();
@@ -80,13 +95,6 @@ let exec p =
       ; ty_opt = Some result_core.ty
       ; tm_opt = Some result_core.tm
       }
-  | Help (ChangeStage _ as opt) ->
-    (* TODO *)
-    stage := Stage.empty ();
-    Meta opt
-  | Help opt ->
-    (* print_string (Tyenv.string_of_tyenv !tyenv) *)
-    Meta opt
   | TMDecl (x, tm) ->
     let result_core = exec_core tm ~ty_annot:None in
     let tyenv' = Tyenv.extend_tybind (x, !stage, result_core.ty) !tyenv in
@@ -108,6 +116,9 @@ let exec p =
     let ty_env' = E.extend (User x) ty env.ty_env in
     env.ty_env <- ty_env';
     ProgRes { var = Some (User "x"); ty_opt = Some ty; tm_opt = None }
+  | Help option ->
+    let _ = exec_meta option in
+    Dummy
   | _ -> raise NotImplemented
 ;;
 
@@ -119,7 +130,7 @@ let show_result = function
       (data.ty_opt |> Option.map ~f:string_of_ty |> Option.value ~default:"-")
       (data.tm_opt |> Option.map ~f:string_of_tm |> Option.value ~default:"-")
   | Meta _ -> raise NotImplemented
-  | Dummy -> raise (NotExpected "function: show_result")
+  | Dummy -> ()
   | RunError e -> printf "RunError of %s" (e |> sexp_of_exn |> string_of_sexp)
 ;;
 

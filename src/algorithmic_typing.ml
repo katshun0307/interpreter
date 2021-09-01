@@ -191,8 +191,13 @@ and validate_kind ~stage ~tyenv = function
     ()
   | KindVar _ -> raise NotImplemented
 
-and has_type ~stage ~tyenv tm ty = judge_type ~stage ~tyenv tm = ty
-and has_kind ~stage ~tyenv ty kind = judge_kind ~stage ~tyenv ty = kind
+and has_type ~stage ~tyenv tm ty =
+  let judged_type = judge_type ~stage ~tyenv tm in
+  is_equivalent_type ~tyenv ~stage ~index:(EqIndex.empty ()) (judged_type, ty)
+
+and has_kind ~stage ~tyenv ty kind =
+  let judged_kind = judge_kind ~stage ~tyenv ty in
+  is_equivalent_kind ~tyenv ~stage ~index:(EqIndex.empty ()) (kind, judged_kind)
 
 (** Shorthand function to assert result of [judge_type]. *)
 and assert_type ~stage ~tyenv tm ty = assert (has_type ~stage ~tyenv tm ty)

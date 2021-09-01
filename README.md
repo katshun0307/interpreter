@@ -35,6 +35,7 @@ t ::= [terms]
 	| <_a t
 	| %_a t
 	| if t1 then t2 else t3
+	| # [meta_options]
 ```
 
 ```
@@ -60,6 +61,12 @@ stage ::= [list of classifiers]
 	| _a<stage>		( list of classifiers )
 ```
 
+```
+meta_options ::=
+	| print_tyenv
+	| t has type T
+	| T has kind K
+
 ## Examples
 
 + `let a = 3 in a + 4;;`
@@ -67,7 +74,8 @@ stage ::= [list of classifiers]
 + `(/\_x. >_x 4) @_a_b;;`
 + `>_a (\x:int. >_a %_a x);;`
 + `(\x: int. x + 4) 42;;`
-+ `id{3}`
-+ `idpeel{3, (x) x + 3}`
-+ `idpeel{id{3}, (x) \m: (eq{int} x 3). m}`
-+ `idpeel{id{3}, (x) \m: (eq{int} x 3). m} id{1+2}`
++ `id{3};;`
++ `idpeel{3, (x) x + 3};;`
++ `idpeel{id{3}, (x) \m: (eq{int} x 3). m};;`
++ `idpeel{id{3}, (x) \m: (eq{int} x 3). m} id{1+2};;`
++ `# id{4 < 56} has type eq{bool} true true;;`
