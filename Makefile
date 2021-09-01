@@ -19,6 +19,11 @@ doc:
 parser:
 	cd src; menhir --explain parser.mly
 
+conflicts: src/parser.mly
+	menhir src/parser.mly --explain
+	mv src/parser.conflicts ./
+	rm src/parser.ml src/parser.mli
+
 .PHONY: clean clean/parser
 clean:
 	dune clean
