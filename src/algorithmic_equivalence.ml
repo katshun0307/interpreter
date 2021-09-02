@@ -134,8 +134,12 @@ and judge_type_equivalence ~tyenv ~stage ~index (ty1, ty2) =
     judge_type_equivalence ~tyenv ~stage ~index (ty1, ty2);
     judge_term_equivalence ~tyenv ~stage ~index (tm1, tm2)
   | ty1, ty2 when ty1 = ty2 -> ()
-  | TyQuote _, _ | _, TyQuote _ -> raise NotImplemented
-  | _ -> raise NotEquivalent
+  (* QTA-Quote *)
+  | TyQuote (a, ty1), TyQuote (b, ty2) when a = b ->
+    judge_type_equivalence ~tyenv ~stage ~index ~env (ty1, ty2)
+  (* QTA-Forall *)
+  | TyGen (a, ty1), TyGen (b, ty2) when a = b ->
+    judge_type_equivalence ~tyenv ~stage ~index ~env (ty1, ty2)
 
 and judge_kind_equivalence ~tyenv ~stage ~index = function
   (* QKA-Star *)
