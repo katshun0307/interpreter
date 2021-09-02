@@ -63,7 +63,10 @@ let rec judge_alpha_equivalence ?(var_pair = []) ?(classifier_pair = []) (tm1, t
       loop_default (cond_l, cond_r);
       loop_default (consequence_l, consequence_r);
       loop_default (alternative_l, alternative_r)
-    | tm1, tm2 -> raise (NotAlphaEquivalent (tm1, tm2))
+    | tm1, tm2 ->
+      sprintf "NotAlphaEquivalent\n1: %s\n2: %s\n" (string_of_tm tm1) (string_of_tm tm2)
+      |> prerr_endline;
+      raise (NotAlphaEquivalent (tm1, tm2))
   in
   loop ~var_pair ~classifier_pair (tm1, tm2)
 
@@ -140,6 +143,13 @@ and judge_type_equivalence ~tyenv ~stage ~index (ty1, ty2) =
   (* QTA-Forall *)
   | TyGen (a, ty1), TyGen (b, ty2) when a = b ->
     judge_type_equivalence ~tyenv ~stage ~index ~env (ty1, ty2)
+  | ty1, ty2 ->
+    sprintf
+      "Two types are not equivalent\n1: %s\n2: %s\n"
+      (string_of_ty ty1)
+      (string_of_ty ty2)
+    |> prerr_endline;
+    raise NotEquivalent
 
 and judge_kind_equivalence ~tyenv ~stage ~index = function
   (* QKA-Star *)
