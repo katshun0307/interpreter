@@ -49,7 +49,7 @@ type exec_result =
 
 (** Return type and reduced value of term. *)
 let exec_core (tm : tm) ~(ty_annot : ty option) : exec_result =
-  let ty = Algorithmic_typing.judge_type ~tyenv:!tyenv ~stage:!stage tm in
+  let ty = Algorithmic_typing.judge_type ~tyenv:!tyenv ~stage:!stage ~env:env.tm_env tm in
   (* NOTE: apply algorithmic reduction on terms in dependent type *)
   let ty =
     Algorithmic_reduction.algorithmic_normal_form_type
@@ -74,11 +74,11 @@ let exec_meta = function
   | PrintTyenv -> !tyenv |> Tyenv.string_of_tyenv |> print_endline
   | HasType (tm, ty) ->
     let open Algorithmic_typing in
-    let flag = has_type ~tyenv:!tyenv ~stage:!stage tm ty in
+    let flag = has_type ~tyenv:!tyenv ~stage:!stage ~env:env.tm_env tm ty in
     flag |> string_of_bool |> print_endline
   | HasKind (ty, kind) ->
     let open Algorithmic_typing in
-    let flag = has_kind ~tyenv:!tyenv ~stage:!stage ty kind in
+    let flag = has_kind ~tyenv:!tyenv ~stage:!stage ~env:env.tm_env ty kind in
     flag |> string_of_bool |> print_endline
 ;;
 

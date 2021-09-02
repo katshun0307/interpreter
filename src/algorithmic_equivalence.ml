@@ -106,36 +106,37 @@ and judge_alpha_equivalence_of_type ?(var_pair = []) ?(classifier_pair = []) (ty
 ;;
 
 (** Judge term equivalence by using QA_ANF rule. *)
-let rec judge_term_equivalence ~tyenv ~stage ~index (s, t) =
+let rec judge_term_equivalence ~tyenv ~stage ~index ~env (s, t) =
   ignore tyenv;
   ignore stage;
   (* QA-ANF *)
-  let anf_s = algorithmic_normal_form ~index s in
-  let anf_t = algorithmic_normal_form ~index t in
+  let anf_s = algorithmic_normal_form ~index s ~env in
+  let anf_t = algorithmic_normal_form ~index t ~env in
   judge_alpha_equivalence (anf_s, anf_t)
 
 (** Judge type equivalence. *)
-and judge_type_equivalence ~tyenv ~stage ~index (ty1, ty2) =
+and judge_type_equivalence ~tyenv ~stage ~index ~env (ty1, ty2) =
   match ty1, ty2 with
   (* QTA-Var *)
   | TyFamily x, TyFamily y when x = y -> ()
   (* QTA-Pi *)
   | TyPi (x1, ty_s1, ty_s2), TyPi (x2, ty_t1, ty_t2) ->
     assert (ty_s1 = ty_s2);
-    judge_type_equivalence ~tyenv ~stage ~index (ty_s1, ty_t1);
+    judge_type_equivalence ~tyenv ~stage ~index ~env (ty_s1, ty_t1);
     judge_type_equivalence
       ~tyenv:(Tyenv.extend_tybind (x1, stage, ty_s1) tyenv)
       ~stage
       ~index
+      ~env
       (ty_s2, subst_type ~source:x1 ~target:(TmVariable x2) ty_t2)
   (* QTA-Sigma *)
   | TySigma (_x, ty_s1, ty_t1), TySigma (_y, ty_s2, ty_t2) ->
-    judge_type_equivalence ~tyenv ~stage ~index (ty_s1, ty_s2);
-    judge_type_equivalence ~tyenv ~stage ~index (ty_t1, ty_t2)
+    judge_type_equivalence ~tyenv ~stage ~index ~env (ty_s1, ty_s2);
+    judge_type_equivalence ~tyenv ~stage ~index ~env (ty_t1, ty_t2)
   (* QTA-App *)
   | TyApp (ty1, tm1), TyApp (ty2, tm2) ->
-    judge_type_equivalence ~tyenv ~stage ~index (ty1, ty2);
-    judge_term_equivalence ~tyenv ~stage ~index (tm1, tm2)
+    judge_type_equivalence ~tyenv ~stage ~index ~env (ty1, ty2);
+    judge_term_equivalence ~tyenv ~stage ~index ~env (tm1, tm2)
   | ty1, ty2 when ty1 = ty2 -> ()
   (* QTA-Quote *)
   | TyQuote (a, ty1), TyQuote (b, ty2) when a = b ->
@@ -151,39 +152,40 @@ and judge_type_equivalence ~tyenv ~stage ~index (ty1, ty2) =
     |> prerr_endline;
     raise NotEquivalent
 
-and judge_kind_equivalence ~tyenv ~stage ~index = function
+and judge_kind_equivalence ~tyenv ~stage ~index ~env = function
   (* QKA-Star *)
   | Proper, Proper -> ()
   (* QKA-Pi *)
   | KindPi (x1, ty1, k1), KindPi (x2, ty2, k2) ->
-    judge_type_equivalence ~tyenv ~stage ~index (ty1, ty2);
+    judge_type_equivalence ~tyenv ~stage ~index ~env (ty1, ty2);
     judge_kind_equivalence
       ~tyenv:(Tyenv.extend_tybind (x1, stage, ty1) tyenv)
       ~stage
       ~index
+      ~env
       (k1, subst_kind ~source:x2 ~target:(TmVariable x1) k2)
   | _ -> raise NotEquivalent
 ;;
 
-let is_equivalent_term ~tyenv ~stage ~index (tm1, tm2) =
+let is_equivalent_term ~tyenv ~stage ~index ~env (tm1, tm2) =
   try
-    let _ = judge_term_equivalence ~tyenv ~stage ~index (tm1, tm2) in
+    let _ = judge_term_equivalence ~tyenv ~stage ~index ~env (tm1, tm2) in
     true
   with
   | NotEquivalent -> false
 ;;
 
-let is_equivalent_type ~tyenv ~stage ~index (ty1, ty2) =
+let is_equivalent_type ~tyenv ~stage ~index ~env (ty1, ty2) =
   try
-    let _ = judge_type_equivalence ~tyenv ~stage ~index (ty1, ty2) in
+    let _ = judge_type_equivalence ~tyenv ~stage ~index ~env (ty1, ty2) in
     true
   with
   | NotEquivalent -> false
 ;;
 
-let is_equivalent_kind ~tyenv ~stage ~index (kind1, kind2) =
+let is_equivalent_kind ~tyenv ~stage ~index ~env (kind1, kind2) =
   try
-    let _ = judge_kind_equivalence ~tyenv ~stage ~index (kind1, kind2) in
+    let _ = judge_kind_equivalence ~tyenv ~stage ~index ~env (kind1, kind2) in
     true
   with
   | NotEquivalent -> false

@@ -82,7 +82,7 @@ and algoritmic_reduction_type ~index ~env =
 ;;
 
 (** Algorithmic normal form of term [tm] with [~index]. *)
-let algorithmic_normal_form ~index ?(env = E.empty ()) =
+let algorithmic_normal_form ~index ~env =
   let rec loop tm =
     let tm' = algoritmic_reduction_term tm ~index ~env in
     if tm' = tm then tm else loop tm'
@@ -91,7 +91,7 @@ let algorithmic_normal_form ~index ?(env = E.empty ()) =
 ;;
 
 (** Algorithmic normal form of type [ty] with [~index]. *)
-let algorithmic_normal_form_type ~index ?(env = E.empty ()) =
+let algorithmic_normal_form_type ~index ~env =
   let rec loop ty =
     let ty' = algoritmic_reduction_type ty ~index ~env in
     if ty' = ty then ty else loop ty'
