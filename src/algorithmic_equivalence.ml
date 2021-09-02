@@ -19,7 +19,7 @@ let rec judge_alpha_equivalence ?(var_pair = []) ?(classifier_pair = []) (tm1, t
     let loop_default = loop ~var_pair ~classifier_pair in
     match tm1, tm2 with
     | TmVariable tvl, TmVariable tvr ->
-      if List.exists var_pair ~f:(( = ) (tvl, tvr))
+      if List.exists var_pair ~f:(( = ) (tvl, tvr)) || tvl = tvr
       then ()
       else raise (NotAlphaEquivalent (tm1, tm2))
     | (IntImmidiate _, IntImmidiate _ | BoolImmidiate _, BoolImmidiate _) when tm1 = tm2
@@ -39,8 +39,10 @@ let rec judge_alpha_equivalence ?(var_pair = []) ?(classifier_pair = []) (tm1, t
       judge_alpha_equivalence_of_type ~var_pair ~classifier_pair (tyl, tyr)
     | TmFst t1, TmFst t2 | TmSnd t1, TmSnd t2 -> loop_default (t1, t2)
     | (Quote (a, tm1), Quote (b, tm2) | Escape (a, tm1), Escape (b, tm2))
-      when List.exists classifier_pair ~f:(( = ) (a, b)) -> loop_default (tm1, tm2)
-    | Csp (a, tml), Csp (b, tmr) when List.exists classifier_pair ~f:(( = ) (a, b)) ->
+      when List.exists classifier_pair ~f:(( = ) (a, b)) || a = b ->
+      loop_default (tm1, tm2)
+    | Csp (a, tml), Csp (b, tmr)
+      when List.exists classifier_pair ~f:(( = ) (a, b)) || a = b ->
       loop_default (tml, tmr)
     | Gen (a, tm1), Gen (b, tm2) ->
       loop (tm1, tm2) ~var_pair ~classifier_pair:((a, b) :: classifier_pair)
@@ -93,7 +95,8 @@ and judge_alpha_equivalence_of_type ?(var_pair = []) ?(classifier_pair = []) (ty
     ()
   | Equality tyl, Equality tyr -> loop_default (tyl, tyr)
   | TyQuote (cl, tyl), TyQuote (cr, tyr)
-    when classifier_pair |> List.exists ~f:(( = ) (cl, cr)) -> loop_default (tyl, tyr)
+    when classifier_pair |> List.exists ~f:(( = ) (cl, cr)) || cl = cr ->
+    loop_default (tyl, tyr)
   | TyGen (cl, tyl), TyGen (cr, tyr) ->
     let _ =
       judge_alpha_equivalence_of_type
