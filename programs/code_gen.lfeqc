@@ -13,3 +13,11 @@ gen_code 4;;
 (* Prove that generated code calculates the triple of x *)
 (* Should have type: pi x:int. eq{int} ((gen_code x) @_) (3 * x) *)
 \x:int. id{(gen_code x) @_};;
+
+(* Guarantee form of code? *)
+(* There exists y such that result of gen_code is greater than  *)
+# id{4 < 56} has type eq{bool} true true;;
+
+(* Prove that there exists x where gen_code 3 is equal to >_a (3 * x) *)
+{3, id{(gen_code 3) @_a} :: sum x:int. eq{|>_a int} (>_a (3 * %_a x)) ((gen_code 3) @_a) };;
+/\_b. {3, id{(gen_code 3) @_b} :: sum x:int. eq{|>_b int} (>_b (3 * %_b x)) ((gen_code 3) @_b) };;
