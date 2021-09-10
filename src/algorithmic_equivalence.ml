@@ -9,7 +9,7 @@ module E = Environment.Environment
 exception NotEquivalent
 
 (** Raised if the two terms are not alpha equivalent *)
-exception NotAlphaEquivalent of tm * tm
+exception NotAlphaEquivalent of string * string
 
 exception NotAlphaEquivalentType of ty * ty
 
@@ -21,7 +21,7 @@ let rec judge_alpha_equivalence ?(var_pair = []) ?(classifier_pair = []) (tm1, t
     | TmVariable tvl, TmVariable tvr ->
       if List.exists var_pair ~f:(( = ) (tvl, tvr)) || tvl = tvr
       then ()
-      else raise (NotAlphaEquivalent (tm1, tm2))
+      else raise (NotAlphaEquivalent (tm1 |> show_tm, tm2 |> show_tm))
     | (IntImmidiate _, IntImmidiate _ | BoolImmidiate _, BoolImmidiate _) when tm1 = tm2
       -> ()
     | BinOp (op1, tml1, tml2), BinOp (op2, tmr1, tmr2) when op1 = op2 ->
@@ -50,7 +50,7 @@ let rec judge_alpha_equivalence ?(var_pair = []) ?(classifier_pair = []) (tm1, t
       if Stage.compare (stage_l, stage_r) ~equal:(fun pair ->
              List.exists ~f:(( = ) pair) classifier_pair)
       then loop_default (tml1, tmr1)
-      else NotAlphaEquivalent (tm1, tm2) |> raise
+      else NotAlphaEquivalent (tm1 |> show_tm, tm2 |> show_tm) |> raise
     | TmId t1, TmId t2 -> loop_default (t1, t2)
     | TmIdpeel (t_eql, xl, dl), TmIdpeel (t_eqr, xr, dr) ->
       loop (dl, dr) ~var_pair:((xl, xr) :: var_pair) ~classifier_pair;
@@ -65,10 +65,7 @@ let rec judge_alpha_equivalence ?(var_pair = []) ?(classifier_pair = []) (tm1, t
       loop_default (cond_l, cond_r);
       loop_default (consequence_l, consequence_r);
       loop_default (alternative_l, alternative_r)
-    | tm1, tm2 ->
-      sprintf "NotAlphaEquivalent\n1: %s\n2: %s\n" (string_of_tm tm1) (string_of_tm tm2)
-      |> prerr_endline;
-      raise (NotAlphaEquivalent (tm1, tm2))
+    | tm1, tm2 -> raise (NotAlphaEquivalent (tm1 |> show_tm, tm2 |> show_tm))
   in
   loop ~var_pair ~classifier_pair (tm1, tm2)
 
