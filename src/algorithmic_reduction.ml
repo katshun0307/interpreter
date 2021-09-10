@@ -8,7 +8,7 @@ module E = Environment.Environment
 (** Axioms for algorithmic reduction. *)
 let rec algorithmic_reduction_axioms tm ~index ~env =
   match tm with
-  | TmVariable x when EqIndex.is_empty index ->
+  | TmVariable x when EqIndex.is_empty index || true (* TODO: check this condition *) ->
     (match E.lookup x env with
     | Some v -> Some v
     | None -> Some tm)
@@ -73,11 +73,10 @@ and algorithmic_reduction_term ~index ~env =
 
 (** Sigle step of algorithmic reduction on types. *)
 and algorithmic_reduction_type ~index ~env =
-  generic_map_type ~maptm:(algorithmic_reduction_term ~index ~env) ~mapty:(fun _ -> None)
-;;
+  generic_map_type ~maptm:(algorithmic_normal_form ~index ~env) ~mapty:(fun _ -> None)
 
 (** Algorithmic normal form of term [tm] with [~index]. *)
-let algorithmic_normal_form ~index ~env =
+and algorithmic_normal_form ~index ~env =
   let rec loop tm =
     let tm' = algorithmic_reduction_term tm ~index ~env in
     if tm' = tm then tm else loop tm'

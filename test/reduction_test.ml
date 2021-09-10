@@ -15,13 +15,15 @@ let () =
   ; cmp = ( = )
   ; dataset =
       [ { input = "/\\_a. >_a (3 * 3)"; expected = "/\\_a. >_a (3 * 3)" }
+      ; { input = "<_a >_a (1 + 2)"; expected = "3" }
       ; { input = "id{/\\_a. >_a (3 * 3)}"; expected = "id{/\\_a. >_a (3 * 3)}" }
       ; { input = "id{(/\\_a. >_a (3 * 3)) @_}"; expected = "id{9}" }
       ; { input = "(/\\_a. >_a (3 * 3)) @_"; expected = "9" }
       ; { input = "(\\x:int. x + 3) 5"; expected = "8" }
       ; { input = "(\\x: int. /\\_a. >_a (3 * %_a x)) 4"
-        ; expected = "/\\_a. >_a (3 * %_a 4)"
+        ; expected = "/\\_a. >_a (3 * 4)"
         }
+      ; { input = "\\x:( eq{int} 3 (1 + 2)). 4"; expected = "\\x:(eq{int} 3 3). 4" }
       ; { input = "(\\z:int. z + 2) 4"; expected = "6" }
       ; { input = "\\z:int. ((\\y: int. y + 3) 3)"; expected = "\\z:int. 6" }
       ; { input = "\\x: (eq{int} 3 3). idpeel{x, (y) (\\z:int. z + 2) 4};;"
@@ -32,7 +34,10 @@ let () =
   |> run_test_case
   |> ignore;
   { name = "algorithmic normal form type"
-  ; func = algorithmic_reduction_type ~index:(EqIndex.empty ()) ~env:(E.empty ())
+  ; func =
+      algorithmic_reduction_type
+        ~index:(EqIndex.empty ())
+        ~env:(E.empty () |> E.extend (User "y") (parse_term ">_a (1 + 2)"))
   ; prep = (fun x -> x)
   ; ishow = string_of_ty
   ; oshow = string_of_ty
@@ -46,6 +51,16 @@ let () =
       ; { input = "prod x:int. eq{int} ((/\\_a. (>_a 3)) @_) 3"
         ; expected = "prod x:int. eq{int} 3 3"
         }
+      ; { input = "eq{int} 3 (1 + 2)"; expected = "eq{int} 3 3" }
+      ; { input = "eq{int} <_a (>_a (1 + 2))"; expected = "eq{int} 3" }
+      ; { input = "eq{int} (<_a y) (<_a y)"; expected = "eq{int} 3 3" }
+      ; { input = "eq{|>_a int} y y"
+        ; expected = "eq{|>_a int} (>_a (1 + 2)) (>_a (1 + 2))"
+        }
+      ; { input = "|>_a (eq{int} (<_a (>_a (1 + 2))) 3)"
+        ; expected = "|>_a (eq{int} 3 3)"
+        }
+      ; { input = "|>_a (eq{int} (<_a y) 3)"; expected = "|>_a (eq{int} 3 3)" }
       ]
   }
   |> run_test_case
