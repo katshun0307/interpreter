@@ -1,6 +1,7 @@
 open Tester
 open Lfeqc__.Tyenv
 open Lfeqc__.Classifier_modules
+open Lfeqc__.Environment
 
 let () =
   let open S in
@@ -20,7 +21,7 @@ let () =
   ; cmp = ( = )
   ; dataset =
       [ { input = "3", "3"; expected = true }
-      ; { input = "hoge", "hoge"; expected = false }
+      ; { input = "hoge", "hoge"; expected = true }
       ; { input = "hoge", "fuga"; expected = false }
       ; { input = "3", "1 + 2"; expected = false }
       ; { input = "3", "y"; expected = false }
@@ -42,6 +43,7 @@ let () =
             ~tyenv:(Tyenv.empty ())
             ~stage:(Stage.empty ())
             ~index:(EqIndex.empty ())
+            ~env:(Environment.empty ())
             x;
           true
         with
@@ -84,6 +86,7 @@ let () =
             ~tyenv:(Tyenv.empty ())
             ~stage:(Stage.empty () |> Stage.add_classifier (Classifier "a"))
             ~index:(EqIndex.empty ())
+            ~env:(Environment.empty ())
             x;
           true
         with
