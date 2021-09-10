@@ -116,6 +116,7 @@ and EqIndex : sig
   val add_promote : classifier -> t -> t
   val add_demote : classifier -> t -> t
   val is_empty : t -> bool
+  val has_demote_classifier_head : classifier -> t -> bool
 
   (** Concatenate stage and equivalence index. [concat_to_stage stage index] calculates [stage ++ index] *)
   val concat_to_stage : Stage.t -> t -> t
@@ -153,6 +154,12 @@ end = struct
   let add_promote classifier index = Promote classifier :: index
   let add_demote classifier index = Demote classifier :: index
   let is_empty index = index = []
+
+  let has_demote_classifier_head classifier index =
+    match index with
+    | Demote c :: _ when c = classifier -> true
+    | _ -> false
+  ;;
 
   let rec is_zero_or_positive = function
     | Promote _ :: rest -> is_zero_or_positive rest

@@ -22,12 +22,17 @@ let () =
       ; { input = "(\\x: int. /\\_a. >_a (3 * %_a x)) 4"
         ; expected = "/\\_a. >_a (3 * %_a 4)"
         }
+      ; { input = "(\\z:int. z + 2) 4"; expected = "6" }
+      ; { input = "\\z:int. ((\\y: int. y + 3) 3)"; expected = "\\z:int. 6" }
+      ; { input = "\\x: (eq{int} 3 3). idpeel{x, (y) (\\z:int. z + 2) 4};;"
+        ; expected = "\\x: (eq{int} 3 3). idpeel{x, (y) 6}"
+        }
       ]
   }
   |> run_test_case
   |> ignore;
   { name = "algorithmic normal form type"
-  ; func = algoritmic_reduction_type ~index:(EqIndex.empty ()) ~env:(E.empty ())
+  ; func = algorithmic_reduction_type ~index:(EqIndex.empty ()) ~env:(E.empty ())
   ; prep = (fun x -> x)
   ; ishow = string_of_ty
   ; oshow = string_of_ty
