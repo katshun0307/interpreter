@@ -1,0 +1,10 @@
+let y = >_a (1 + 2);;
+
+(* should be true *)
+# >_a id{<_a y} has type |>_a (eq{int} (<_a y) 3);;
+
+(* should be true *)
+# id{y} has type eq{|>_a int} y (>_a (1 + 2));;
+
+(* should be false *)
+# id{y} has type (eq{|>_a int} y (>_a 3));;
