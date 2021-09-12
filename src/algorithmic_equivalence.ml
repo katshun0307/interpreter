@@ -112,7 +112,8 @@ let rec judge_term_equivalence ~tyenv ~stage ~index ~env (s, t) =
   (* QA-ANF *)
   let anf_s = algorithmic_normal_form ~index s ~env in
   let anf_t = algorithmic_normal_form ~index t ~env in
-  judge_alpha_equivalence (anf_s, anf_t)
+  try judge_alpha_equivalence (anf_s, anf_t) with
+  | _ -> raise NotEquivalent
 
 (** Judge type equivalence. *)
 and judge_type_equivalence ~tyenv ~stage ~index ~env (ty1, ty2) =
