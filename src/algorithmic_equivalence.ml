@@ -1,7 +1,7 @@
 open Core
 open Syntax
 open Tyenv
-open Eval
+(* open Eval *)
 open Classifier_modules
 open Algorithmic_reduction
 module E = Environment.Environment

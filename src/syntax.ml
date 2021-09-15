@@ -321,11 +321,11 @@ let rec free_classifiers tm =
   | Quote (a, t) | Escape (a, t) | Csp (a, t) -> a :: free_classifiers t
   | Gen (a, t) -> free_classifiers t |> List.filter ~f:(fun y -> not (y = a))
   | GenApp (t, stage) -> free_classifiers t @ Stage.to_list stage
-  | TmLam (x, _, t) -> free_classifiers t
+  | TmLam (_, _, t) -> free_classifiers t
   | BinOp (_, t1, t2) | TmApp (t1, t2) | TmPair (t1, t2, _) ->
     free_classifiers t1 @ free_classifiers t2
   | TmFst t | TmSnd t | TmId t -> free_classifiers t
-  | TmIdpeel (t1, tmv', tm2) -> free_classifiers t1 @ free_classifiers tm2
+  | TmIdpeel (t1, _, tm2) -> free_classifiers t1 @ free_classifiers tm2
   | TmIf (tm1, tm2, tm3) ->
     free_classifiers tm1 @ free_classifiers tm2 @ free_classifiers tm3
   | TmLet (_, _tm1, tm2) -> free_classifiers tm2
