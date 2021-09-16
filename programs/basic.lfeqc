@@ -1,10 +1,10 @@
 let x = >_a 3;;
 
-(/\_a. >_a 4) @_;;
+(/\_a. >_a 4) @;;
 
->_a ((<_a x) * (<_a x) + 2);;
+>_a (<_a x) * (<_a x) + 2;;
 
-(/\_a. >_a ((<_a x) * (<_a x) + 2)) @_;;
+(/\_a. >_a ((<_a x) * (<_a x) + 2)) @;;
 
 let eq3 = id{3};;
 
@@ -12,11 +12,11 @@ eq3;;
 
 id{7};;
 
-(\x:((eq{int} (3+4)) (4+3)). x) id{7};;
+(\x:(eq{int} (3+4) (4+3)). x) id{7};;
 
 idpeel{id{3}, (x) \m:(eq{int} x 3). m};;
 
-(idpeel{id{3}, (x) \m:((eq{int} x) 3). m}) (id{1+2});;
+(idpeel{id{3}, (x) \m:(eq{int} x 3). m}) (id{1+2});;
 
 (* equality types *)
 let ifeq = id{if true then 3 else 4};;

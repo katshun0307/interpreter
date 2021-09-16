@@ -1,23 +1,23 @@
 (* Some code generator *)
-let gen_code = \x:int. (/\_a. >_a (3 * %_a x));;
+let gen_code = \x:int. /\_a. >_a 3 * (%_a x);;
 
 (* Generate code *)
 gen_code 4;;
 
 (* Eval generated code *)
-(gen_code 4) @_;;
+gen_code 4 @;;
 
 (* Should pass this *)
 \x:int. id{x};;
 
 (* Prove that generated code calculates the triple of x *)
-(* Should have type: pi x:int. eq{int} ((gen_code x) @_) (3 * x) *)
-\x:int. id{(gen_code x) @_};;
+(* Should have type: pi x:int. eq{int} (gen_code x @) (3 * x) *)
+\x:int. id{gen_code x @};;
 
 (* Guarantee form of code? *)
 (* There exists y such that result of gen_code is greater than  *)
 # id{4 < 56} has type eq{bool} true true;;
 
 (* Prove that there exists x where gen_code 3 is equal to >_a (3 * x) *)
-{3, id{(gen_code 3) @_a} :: sum x:int. eq{|>_a int} (>_a (3 * %_a x)) ((gen_code 3) @_a) };;
-/\_b. {3, id{(gen_code 3) @_b} :: sum x:int. eq{|>_b int} (>_b (3 * %_b x)) ((gen_code 3) @_b) };;
+{3, id{gen_code 3 @_a} :: sum x:int. eq{|>_a int} (>_a 3 * (%_a x)) (gen_code 3 @_a) };;
+/\_b. {3, id{gen_code 3 @_b} :: sum x:int. eq{|>_b int} (>_b 3 * (%_b x)) (gen_code 3 @_b) };;
