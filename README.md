@@ -56,9 +56,8 @@ A ::= [Stages]
 	| @stage
 
 stage ::= [list of classifiers]
-	| _				( empty stage )
-	| _a			( single classifier )
-	| _a<stage>		( list of classifiers )
+	| 				( empty stage )
+	| stage_a		( list of classifiers )
 ```
 
 ```
@@ -70,7 +69,7 @@ meta_options ::=
 ## Examples
 
 + `let a = 3 in a + 4;;`
-+ `(/\_x. >_x 4) @_;;`
++ `(/\_x. >_x 4) @;;`
 + `(/\_x. >_x 4) @_a_b;;`
 + `>_a (\x:int. >_a %_a x);;`
 + `(\x: int. x + 4) 42;;`
