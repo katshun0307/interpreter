@@ -42,7 +42,7 @@ toplevel :
   | LET x=AnnotID EQUAL tm=TMExpr SEMISEMI { TMDeclAnnot(x, tm) }
   | TYPE x=ID EQUAL ty=TYExpr SEMISEMI { TYDecl(x, ty) }
 //   | e=EquivExpr { e }
-  | SHARP e=CommandExpr { Help e }
+  | SHARP e=CommandExpr SEMISEMI { Help e }
   | EOF { raise EOF }
 
 // misc
@@ -54,12 +54,11 @@ AnnotID:
   | LPAREN e=AnnotID RPAREN { e }
 
 StageExpr:
-  | ATMARK s=Stage { Stage.from_list s }
+  | ATMARK s=Stage { Stage.from_list (List.rev s) }
 
 Stage:
-  | UNDERBAR { [] }
-  | UNDERBAR a=ID { [Classifier a] }
-  | UNDERBAR a=ID rest=Stage { Classifier(a) :: rest }
+  |  { [] }
+  | l=Stage UNDERBAR a=ID { (Classifier a) :: l }
 
 ClassifierExpr:
   | a=ID { Classifier(a) }
@@ -83,10 +82,13 @@ typing:
   | e=TYExpr SEMISEMI { e }
 
 // types
+// Where is a function type??
 TYExpr :
   | PI x=UserID COLON ty1=TYExpr DOT ty2=TYExpr { TyPi(x, ty1, ty2) }
   | SIGMA x=UserID COLON ty1=TYExpr DOT ty2=TYExpr { TySigma(x, ty1, ty2) }
-  | e = TYAPPExpr { e }
+  | QUOTETYPE a=ClassifierExpr ty=TYExpr { TyQuote(a, ty) }
+  | FORALL a=ClassifierExpr ty=TYExpr { TyGen(a, ty) }
+  | ty = TYAPPExpr { ty }
 
 TYAPPExpr :
   | ty1=TYAPPExpr tm2=AExpr { TyApp(ty1, tm2) }
@@ -94,8 +96,6 @@ TYAPPExpr :
 
 TYAExpr :
   | x=TYID { TyFamily x }
-  | QUOTETYPE a=ClassifierExpr ty=TYExpr { TyQuote(a, ty) }
-  | FORALL a=ClassifierExpr ty=TYExpr { TyGen(a, ty) }
   | INT { TyInt }
   | BOOL { TyBool }
   | EQ LCURLY ty=TYExpr RCURLY { Equality ty }
@@ -110,6 +110,10 @@ TMExpr :
   | GEN a=ClassifierExpr DOT tm=TMExpr { Gen(a, tm) }
   | EQIDPEEL LCURLY tm1=TMExpr COMMA LPAREN x=UserID RPAREN tm2=TMExpr RCURLY { TmIdpeel(tm1, x, tm2) }
   | IF tm1=TMExpr THEN tm2=TMExpr ELSE tm3=TMExpr { TmIf(tm1, tm2, tm3) }
+  //
+  | QUOTE a=ClassifierExpr tm=EqExpr { Quote(a, tm) }
+  | ESCAPE a=ClassifierExpr tm=EqExpr { Escape(a, tm) }
+  | CSP UNDERBAR a=ClassifierExpr tm=EqExpr { Csp(a, tm) }
 
 KindExpr :
   | PROPER { Proper }
@@ -147,20 +151,20 @@ MultExpr:
   | e=AppExpr { e }
 
 AppExpr:
-  | e1=AppExpr e2=AExpr { TmApp(e1, e2) }
+  | e1=AppExpr e2=PostFixExpr { TmApp(e1, e2) }
   | e1=AppExpr a=StageExpr { GenApp(e1, a) }
+  | e=PostFixExpr { e }
+
+PostFixExpr:
   | e=AExpr { e }
+  | e=PostFixExpr DOT FST { TmFst e }
+  | e=PostFixExpr DOT SND { TmSnd e }
 
 AExpr :
-  | QUOTE a=ClassifierExpr tm=AExpr { Quote(a, tm) }
-  | ESCAPE a=ClassifierExpr tm=AExpr { Escape(a, tm) }
-  | CSP UNDERBAR a=ClassifierExpr tm=AExpr { Csp(a, tm) }
   | i=UserID { TmVariable i }
   | i=INTV { IntImmidiate i }
   | TRUE   { BoolImmidiate true }
   | FALSE  { BoolImmidiate false }
-  | e=AExpr DOT FST { TmFst e }
-  | e=AExpr DOT SND { TmSnd e }
   | EQID LCURLY tm=TMExpr RCURLY { TmId(tm) }
   | LCURLY t1=TMExpr COMMA t2=TMExpr DCOLON SIGMA x=UserID COLON s=TYExpr DOT t=TYExpr RCURLY { TmPair(t1, t2, TySigma(x, s, t)) }
   | LPAREN e=TMExpr RPAREN { e }
