@@ -61,10 +61,10 @@ let rec is_value_exn ~stage = function
       is_value_exn ~stage cond;
       is_value_exn ~stage do_if;
       is_value_exn ~stage do_else
-    | BinOp (op, tm1, tm2) ->
+    | BinOp (_, tm1, tm2) ->
       is_value_exn ~stage tm1;
       is_value_exn ~stage tm2
-    | TmLet (x, t1, t2) ->
+    | TmLet (_, t1, t2) ->
       is_value_exn ~stage t1;
       is_value_exn ~stage t2
     | _ -> raise NotValue)
@@ -124,7 +124,7 @@ let rec one_step_eval_opt tm ~stage ~env =
   | TmIdpeel (TmId y, x, t) when Stage.is_empty stage ->
     subst_term ~source:x ~target:y t |> Option.some
   (* E-Csp *)
-  | Csp (a, t) ->
+  | Csp (_, t) ->
     let fv = freevars t in
     if fv = []
     then Some t
@@ -195,7 +195,7 @@ let rec one_step_eval_opt tm ~stage ~env =
 
 (** Perform [one_step_eval_opt] until the term saturates. *)
 let rec eval_term tm ~stage ~env =
-  let rec loop tm =
+  let loop tm =  (* AI: This function is better inline-expanded *)
     match one_step_eval_opt ~stage ~env tm with
     | Some tm' -> eval_term ~stage ~env tm'
     | None -> tm

@@ -2,7 +2,7 @@ open Core
 open Syntax
 open Classifier_modules
 open Algorithmic_equivalence
-open Algorithmic_reduction
+(* open Algorithmic_reduction *)
 open Tyenv.Tyenv
 
 let raise_not_expected tm =
