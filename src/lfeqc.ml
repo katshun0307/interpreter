@@ -112,7 +112,6 @@ let exec p =
     (* let _ = ([ ty, ty' ], []) @^ constraint_of_subst subst |> unify env.tm_env in *)
     raise NotImplemented
   | TYDecl (x, ty) ->
-    (* TODO: implement *)
     let ty_env' = E.extend (User x) ty env.ty_env in
     env.ty_env <- ty_env';
     ProgRes { var = Some (User "x"); ty_opt = Some ty; tm_opt = None }
