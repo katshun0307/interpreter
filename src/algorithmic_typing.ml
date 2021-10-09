@@ -2,7 +2,6 @@ open Core
 open Syntax
 open Classifier_modules
 open Algorithmic_equivalence
-(* open Algorithmic_reduction *)
 open Tyenv.Tyenv
 
 let raise_not_expected tm =
@@ -31,14 +30,14 @@ let rec judge_type ~stage ~tyenv ~env tm =
     let ty_one' = judge_type ~stage ~tyenv ~env t1 in
     let ty_two' = judge_type ~stage ~tyenv ~env t2 in
     let _check_kinding = assert_kind ~stage ~tyenv ty Proper in
-    let _check_equivalence =
-      judge_type_equivalence ~tyenv ~stage ~index:(EqIndex.empty ()) ~env (ty_one, ty_one')
+    let _check_equivalence_first =
+      judge_type_equivalence ~tyenv ~stage ~index:stage ~env (ty_one, ty_one')
     in
-    let _check_equivalence =
+    let _check_equivalence_second =
       judge_type_equivalence
         ~tyenv
         ~stage
-        ~index:(EqIndex.empty ())
+        ~index:stage
         ~env
         (ty_two', subst_type ~source:x ~target:t1 ty_two)
     in
@@ -50,12 +49,7 @@ let rec judge_type ~stage ~tyenv ~env tm =
     (match ty_fun with
     | TyPi (x, ty_arg', ty_res') ->
       let _check_equivalence =
-        judge_type_equivalence
-          ~tyenv
-          ~stage
-          ~index:(EqIndex.empty ())
-          ~env
-          (ty_arg, ty_arg')
+        judge_type_equivalence ~tyenv ~stage ~index:stage ~env (ty_arg, ty_arg')
       in
       subst_type ~source:x ~target:t ty_res'
     | _ -> raise_not_expected tm)
@@ -131,14 +125,7 @@ let rec judge_type ~stage ~tyenv ~env tm =
     let _ = assert_type ~stage ~tyenv ~env t_cond TyBool in
     let ty_then = judge_type ~tyenv ~stage ~env t_then in
     let ty_else = judge_type ~tyenv ~stage ~env t_else in
-    let _ =
-      judge_type_equivalence
-        ~tyenv
-        ~stage
-        ~index:(EqIndex.empty ())
-        ~env
-        (ty_then, ty_else)
-    in
+    let _ = judge_type_equivalence ~tyenv ~stage ~index:stage ~env (ty_then, ty_else) in
     ty_then
   | TmLet (x, t1, t2) ->
     let ty1 = judge_type ~tyenv ~stage ~env t1 in
@@ -169,14 +156,7 @@ and judge_kind ~stage ~tyenv ~env = function
     (match judge_kind ~stage ~tyenv ~env ty_fun with
     | KindPi (_, ty_arg', kind_ret) ->
       let ty_arg = judge_type ~stage ~tyenv ~env tm_arg in
-      let _ =
-        judge_type_equivalence
-          ~tyenv
-          ~stage
-          ~index:(EqIndex.empty ())
-          ~env
-          (ty_arg, ty_arg')
-      in
+      let _ = judge_type_equivalence ~tyenv ~stage ~index:stage ~env (ty_arg, ty_arg') in
       kind_ret
     | _ -> NotExpected (ty |> string_of_ty |> sprintf "failed to judge kind: %s") |> raise)
   (* KA-Sigma *)
@@ -222,11 +202,11 @@ and validate_kind ~stage ~tyenv ~env = function
 
 and has_type ~stage ~tyenv ~env tm ty =
   let judged_type = judge_type ~stage ~tyenv tm ~env in
-  is_equivalent_type ~tyenv ~stage ~index:(EqIndex.empty ()) ~env (judged_type, ty)
+  is_equivalent_type ~tyenv ~stage ~index:stage ~env (judged_type, ty)
 
 and has_kind ~stage ~tyenv ~env ty kind =
   let judged_kind = judge_kind ~stage ~tyenv ~env ty in
-  is_equivalent_kind ~tyenv ~stage ~index:(EqIndex.empty ()) ~env (kind, judged_kind)
+  is_equivalent_kind ~tyenv ~stage ~index:stage ~env (kind, judged_kind)
 
 (** Shorthand function to assert result of [judge_type]. *)
 and assert_type ~stage ~tyenv ~env tm ty = assert (has_type ~stage ~tyenv ~env tm ty)

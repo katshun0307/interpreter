@@ -1,7 +1,6 @@
 open Core
 open Syntax
 open Tyenv
-(* open Eval *)
 open Classifier_modules
 open Algorithmic_reduction
 module E = Environment.Environment
@@ -106,18 +105,19 @@ and judge_alpha_equivalence_of_type ?(var_pair = []) ?(classifier_pair = []) (ty
 ;;
 
 (** Judge term equivalence by using QA_ANF rule. *)
-let rec judge_term_equivalence ~tyenv ~stage ~index ~env (s, t) =
+let rec judge_term_equivalence ~tyenv ~(stage : Stage.t) ~(index : Stage.t) ~env (s, t) =
   ignore tyenv;
   ignore stage;
   (* QA-ANF *)
-  let anf_s = algorithmic_normal_form ~index s ~env in
-  let anf_t = algorithmic_normal_form ~index t ~env in
+  let anf_s = algorithmic_normal_form ~stage ~index s ~env in
+  let anf_t = algorithmic_normal_form ~stage ~index t ~env in
   try judge_alpha_equivalence (anf_s, anf_t) with
   | _ -> raise NotEquivalent
 
 (** Judge type equivalence. *)
 and judge_type_equivalence ~tyenv ~stage ~index ~env (ty1, ty2) =
   match ty1, ty2 with
+  (* TODO: QTA-Csp *)
   (* QTA-Var *)
   | TyFamily x, TyFamily y when x = y -> ()
   (* QTA-Pi *)
@@ -141,8 +141,13 @@ and judge_type_equivalence ~tyenv ~stage ~index ~env (ty1, ty2) =
   | ty1, ty2 when ty1 = ty2 -> ()
   (* QTA-Quote *)
   | TyQuote (a, ty1), TyQuote (b, ty2) when a = b ->
-    judge_type_equivalence ~tyenv ~stage ~index ~env (ty1, ty2)
-  (* QTA-Forall *)
+    judge_type_equivalence
+      ~tyenv
+      ~stage:(Stage.add_classifier a stage)
+      ~index
+      ~env
+      (ty1, ty2)
+  (* QTA-Gen *)
   | TyGen (a, ty1), TyGen (b, ty2) when a = b ->
     judge_type_equivalence ~tyenv ~stage ~index ~env (ty1, ty2)
   | ty1, ty2 ->
