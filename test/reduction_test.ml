@@ -19,12 +19,11 @@ let () =
   ; cmp = ( = )
   ; dataset =
       [ { input = "/\\_a. >_a (3 * 3)"; expected = "/\\_a. >_a (3 * 3)" }
-      ; { input = "<_a >_a (1 + 2)"; expected = "3" }
-      ; { input = "id{/\\_a. >_a (3 * 3)}"; expected = "id{/\\_a. >_a (3 * 3)}" }
-      ; { input = "id{(/\\_a. >_a (3 * 3)) @_}"; expected = "id{9}" }
-      ; { input = "(/\\_a. >_a (3 * 3)) @_"; expected = "9" }
+      ; { input = "id{/\\_a. (>_a (3 * 3))}"; expected = "id{/\\_a. >_a (3 * 3)}" }
+      ; { input = "id{(/\\_a. >_a (3 * 3)) @}"; expected = "id{9}" }
+      ; { input = "(/\\_a. >_a (3 * 3)) @"; expected = "9" }
       ; { input = "(\\x:int. x + 3) 5"; expected = "8" }
-      ; { input = "(\\x: int. /\\_a. >_a (3 * %_a x)) 4"
+      ; { input = "(\\x: int. /\\_a. >_a (3 * (%_a x))) 4"
         ; expected = "/\\_a. >_a (3 * 4)"
         }
       ; { input = "\\x:( eq{int} 3 (1 + 2)). 4"; expected = "\\x:(eq{int} 3 3). 4" }
@@ -53,12 +52,10 @@ let () =
       [ { input = "int"; expected = "int" }
       ; { input = "prod x: int. bool"; expected = "prod x: int. bool" }
       ; { input = "prod x: int. eq{int} 3 (3 + 2)"; expected = "prod x:int. eq{int} 3 5" }
-      ; { input = "prod x:int. eq{int} ((/\\_a. (>_a 3)) @_) 3"
+      ; { input = "prod x:int. eq{int} ((/\\_a. (>_a 3)) @) 3"
         ; expected = "prod x:int. eq{int} 3 3"
         }
       ; { input = "eq{int} 3 (1 + 2)"; expected = "eq{int} 3 3" }
-      ; { input = "eq{int} <_a (>_a (1 + 2))"; expected = "eq{int} 3" }
-      ; { input = "eq{int} (<_a y) (<_a y)"; expected = "eq{int} 3 3" }
       ; { input = "eq{|>_a int} y y"
         ; expected = "eq{|>_a int} (>_a (1 + 2)) (>_a (1 + 2))"
         }
