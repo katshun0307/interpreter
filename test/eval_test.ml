@@ -18,7 +18,8 @@ let () =
   ; oprep = parse_term
   ; cmp = ( = )
   ; dataset =
-      [ { input = "(<_a >_a 3)"; expected = "3" }
+      [ { input = "(/\\_a. >_a 1 + 2) @"; expected = "3" }
+      ; { input = ">_a (<_a (>_a (2 + 3)))"; expected = ">_a 2 + 3" }
       ; { input = "(/\\_a. >_a 4) @_b"; expected = ">_b 4" }
       ]
   }

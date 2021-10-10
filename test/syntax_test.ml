@@ -52,7 +52,7 @@ let () =
   ; cmp = ( = )
   ; dataset =
       [ { input = [ "x" ]; expected = "%_x 3" }
-      ; { input = [ "x"; "y" ]; expected = "%_y %_x 3" }
+      ; { input = [ "x"; "y" ]; expected = "%_y (%_x 3)" }
       ]
   }
   |> run_test_case
@@ -70,9 +70,9 @@ let () =
   ; cmp = ( = )
   ; dataset =
       [ { input = ">_x 3"; expected = ">_y 3" }
-      ; { input = ">_x <_y >_x 3"; expected = ">_y <_y >_y 3" }
+      ; { input = ">_x (<_y (>_x 3))"; expected = ">_y (<_y (>_y 3))" }
       ; { input = "/\\_x. >_x 3"; expected = "/\\_x. >_x 3" }
-      ; { input = "/\\_ z. >_z >_x 3"; expected = "/\\_ z. >_z >_y 3" }
+      ; { input = "/\\_ z. >_z (>_x 3)"; expected = "/\\_ z. >_z (>_y 3)" }
       ; { input = "%_a 3"; expected = "%_a 3" }
       ; { input = "%_x 3"; expected = "%_y 3" }
       ]
@@ -91,12 +91,12 @@ let () =
   ; oprep = parse_term
   ; cmp = ( = )
   ; dataset =
-      [ { input = ">_x 3"; expected = ">_y >_z 3" }
-      ; { input = ">_x <_y >_x 3"; expected = ">_y >_z <_y >_y >_z 3" }
-      ; { input = "%_x 3"; expected = "%_z %_y 3" }
+      [ { input = ">_x 3"; expected = ">_y (>_z 3)" }
+      ; { input = ">_x (<_y (>_x 3))"; expected = ">_y (>_z (<_y (>_y (>_z 3))))" }
+      ; { input = "%_x 3"; expected = "%_z (%_y 3)" }
       ; { input = "/\\_x. >_x 3"; expected = "/\\_x. >_x 3" }
-      ; { input = "/\\_a. >_a >_x 3"; expected = "/\\_a. >_a >_y >_z 3" }
-      ; { input = "/\\_a. >_a <_x 3"; expected = "/\\_a. >_a <_z <_y 3" }
+      ; { input = "/\\_a. >_a (>_x 3)"; expected = "/\\_a. >_a (>_y (>_z 3))" }
+      ; { input = "/\\_a. >_a (<_x 3)"; expected = "/\\_a. >_a (<_z (<_y 3))" }
       ; { input = "/\\_x. %_x 3"; expected = "/\\_x. %_x 3" }
       ]
   }
@@ -116,7 +116,7 @@ let () =
   ; dataset =
       [ { input = "X"; expected = "X" }
       ; { input = "int"; expected = "int" }
-      ; { input = "eq{int} >_a 3 >_a 3"; expected = "eq{int} >_a 3 >_a 3" }
+      ; { input = "eq{int} (>_a 3) (>_a 3)"; expected = "eq{int} (>_a 3) (>_a 3)" }
       ; { input = "\\-/ x |>_x int"; expected = "\\-/ x |>_x int" }
       ; { input = "\\-/ zz |>_x int"; expected = "\\-/ zz |>_y |>_z int" }
       ; { input = "|>_x |>_zz int"; expected = "|>_y |>_z |>_zz int" }
