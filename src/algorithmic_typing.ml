@@ -136,9 +136,8 @@ let rec judge_type ~stage ~tyenv ~env tm =
 and judge_kind ~stage ~tyenv ~env = function
   (* KA-Var *)
   | TyFamily x ->
-    let k = lookup_kind x stage tyenv in
-    let _ = validate_kind ~stage ~tyenv ~env k in
-    k
+    let _ = "Context for type level constants in not yet implemented." |> prerr_endline in
+    raise NotImplemented
   (* KA-Pi *)
   | TyPi (x, ty_arg, ty_res) ->
     let _ = assert_kind ~stage ~tyenv ~env ty_arg Proper in
