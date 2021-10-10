@@ -53,7 +53,8 @@ let exec_core (tm : tm) ~(ty_annot : ty option) : exec_result =
   (* NOTE: apply algorithmic reduction on terms in dependent type *)
   let ty =
     Algorithmic_reduction.algorithmic_normal_form_type
-      ~index:(EqIndex.empty ())
+      ~stage:!stage
+      ~index:!stage
       ~env:env.tm_env
       ty
   in

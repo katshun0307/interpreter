@@ -6,7 +6,11 @@ module E = Lfeqc__.Environment.Environment
 
 let () =
   { name = "algorithmic normal form"
-  ; func = algorithmic_normal_form ~index:(EqIndex.empty ()) ~env:(E.empty ())
+  ; func =
+      algorithmic_normal_form
+        ~stage:(Stage.empty ())
+        ~index:(Stage.empty ())
+        ~env:(E.empty ())
   ; prep = (fun x -> x)
   ; ishow = string_of_tm
   ; oshow = string_of_tm
@@ -36,7 +40,8 @@ let () =
   { name = "algorithmic normal form type"
   ; func =
       algorithmic_reduction_type
-        ~index:(EqIndex.empty ())
+        ~stage:(Stage.empty ())
+        ~index:(Stage.empty ())
         ~env:(E.empty () |> E.extend (User "y") (parse_term ">_a (1 + 2)"))
   ; prep = (fun x -> x)
   ; ishow = string_of_ty

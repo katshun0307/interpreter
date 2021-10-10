@@ -42,7 +42,7 @@ let () =
           Eq.judge_term_equivalence
             ~tyenv:(Tyenv.empty ())
             ~stage:(Stage.empty ())
-            ~index:(EqIndex.empty ())
+            ~index:(Stage.empty ())
             ~env:(Environment.empty ())
             x;
           true
@@ -85,7 +85,7 @@ let () =
           Eq.judge_term_equivalence
             ~tyenv:(Tyenv.empty ())
             ~stage:(Stage.empty () |> Stage.add_classifier (Classifier "a"))
-            ~index:(EqIndex.empty ())
+            ~index:(Stage.empty ())
             ~env:(Environment.empty ())
             x;
           true

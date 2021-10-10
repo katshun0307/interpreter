@@ -108,7 +108,8 @@ let rec one_step_eval_opt tm ~stage ~env =
   | TmApp (TmLam (x, _, tm_body), tm_arg) when Stage.is_empty stage ->
     subst_term ~source:x ~target:tm_arg tm_body |> Option.some
   (* E-StageBeta *)
-  | Escape (a, Quote (b, t)) when b = a && Stage.is_empty stage -> Some t
+  | Escape (a, Quote (b, t))
+    when b = a && Stage.is_single stage && Stage.tail stage = Some a -> Some t
   (* E-GenApp *)
   | GenApp (Gen (a, tm), stage_arg) when Stage.is_empty stage ->
     subst_classifier_term ~source:a ~target:stage_arg tm |> Option.some

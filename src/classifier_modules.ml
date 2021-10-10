@@ -20,7 +20,6 @@ module rec Stage : sig
   val from_list : classifier list -> t
   val to_list : t -> classifier list
   val to_string : t -> string
-  val to_index : t -> EqIndex.t
 
   (** Add classifier to stage  *)
   val add_classifier : classifier -> t -> t
@@ -41,6 +40,10 @@ module rec Stage : sig
 
   (* val fold_left : t -> f:(classifier -> 'a -> 'a) -> init:'a -> 'a *)
   val is_empty : t -> bool
+  val is_single : t -> bool
+  val is_above : low:t -> high:t -> bool
+  val allow_beta_reduction : stage:t -> index:t -> bool
+  val allow_code_manipulation : stage:t -> index:t -> classifier:classifier -> bool
 
   exception EmptyStage
   exception OperationFailed
@@ -61,13 +64,6 @@ end = struct
       |> List.map ~f:(fun c -> "_" ^ string_of_classifier c)
       |> String.concat ~sep:""
       |> ( ^ ) "@"
-  ;;
-
-  let to_index stage =
-    List.fold_right
-      stage
-      ~f:(fun classifier accum -> accum |> EqIndex.add_promote classifier)
-      ~init:(EqIndex.empty ())
   ;;
 
   let add_classifier = List.cons
@@ -104,82 +100,19 @@ end = struct
 
   (* let fold_left = List.fold_left *)
   let is_empty = ( = ) []
-end
+  let is_single t = List.length t = 1
 
-(** Implements equivalence index using [classifier]. *)
-and EqIndex : sig
-  (** Equivalence index and redution index *)
-  type t [@@deriving show]
-
-  val empty : unit -> t
-  val to_string : t -> string
-  val add_promote : classifier -> t -> t
-  val add_demote : classifier -> t -> t
-  val is_empty : t -> bool
-  val has_demote_classifier_head : classifier -> t -> bool
-
-  (** Concatenate stage and equivalence index. [concat_to_stage stage index] calculates [stage ++ index] *)
-  val concat_to_stage : Stage.t -> t -> t
-
-  (** Whether to allow beta reduction *)
-  val allow_beta_reduction : t -> bool
-
-  (** Whether to allow code manipulation *)
-  val allow_code_manipulation : t -> bool
-
-  (** Returns [true] when the index has no demote classifiers. *)
-  val is_zero_or_positive : t -> bool
-end = struct
-  exception OperationFailed
-
-  type index_classifier =
-    | Promote of classifier
-    | Demote of classifier
-  [@@deriving show]
-
-  type t = index_classifier list [@@deriving show]
-
-  let empty () = []
-
-  let string_of_index_classifier = function
-    | Promote x -> "+" ^ string_of_classifier x
-    | Demote x -> "-" ^ string_of_classifier x
-  ;;
-
-  let to_string t =
-    let content = t |> List.map ~f:string_of_index_classifier |> String.concat ~sep:"" in
-    "(" ^ content ^ ")"
-  ;;
-
-  let add_promote classifier index = Promote classifier :: index
-  let add_demote classifier index = Demote classifier :: index
-  let is_empty index = index = []
-
-  let has_demote_classifier_head classifier index =
-    match index with
-    | Demote c :: _ when c = classifier -> true
+  let rec is_above ~low ~high =
+    match List.rev low, List.rev high with
+    | [], _ -> true
+    | a :: low', b :: high' when a = b -> is_above ~low:low' ~high:high'
     | _ -> false
   ;;
 
-  let rec is_zero_or_positive = function
-    | Promote _ :: rest -> is_zero_or_positive rest
-    | Demote _ :: _rest -> false
-    | [] -> true
-  ;;
+  let allow_beta_reduction ~stage ~index = is_above ~low:stage ~high:index
 
-  let allow_beta_reduction index = is_zero_or_positive index
-  let allow_code_manipulation index = is_empty index
-
-  let rec concat_to_stage stage = function
-    | [] -> stage |> Stage.to_index
-    | Promote c :: rest_of_index ->
-      concat_to_stage (stage |> Stage.add_classifier c) rest_of_index
-    | Demote c :: rest_of_index ->
-      (match Stage.remove_classifier stage with
-      | c', rest_of_stage ->
-        if c = c'
-        then concat_to_stage rest_of_stage rest_of_index
-        else raise OperationFailed)
+  let allow_code_manipulation ~stage ~index ~classifier =
+    let classifier', stage' = remove_classifier stage in
+    classifier = classifier' && is_above ~low:stage' ~high:index
   ;;
 end
-[@@deriving show]
