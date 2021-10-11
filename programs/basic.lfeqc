@@ -18,17 +18,10 @@ idpeel{id{3}, (x) \m:(eq{int} x 3). m};;
 
 (idpeel{id{3}, (x) \m:(eq{int} x 3). m}) (id{1+2});;
 
-(* equality types *)
 let ifeq = id{if true then 3 else 4};;
+(* equality types *)
 
 idpeel{id{ifeq}, (x) x};;
 
 (* product type *)
 let abs = \x:int. if x >= 0 then x else (-1 * x);;
-(* for all x, abs(x) == abs(abs(x)) *)
-(* \x: int. (id{abs x});; *)
-
-(* sum type *)
-(* (3, next(3) : sum x:int. int code);; *)
-(next(4), id{next(3 + 4)} : sum x: int code. (eq{int code} (next(3 + 4))) (next(3 + prev x)));;
-(* (4), id{next(3 + 4)} : sum x: int code. (eq{int code} (3 + 4)) (3 + prev x));; *)
