@@ -1,0 +1,3 @@
+let id_3 = id{3};;
+
+idpeel{id_3, (x) 3 + x};;
