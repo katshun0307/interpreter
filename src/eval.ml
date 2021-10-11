@@ -196,12 +196,10 @@ let rec one_step_eval_opt tm ~stage ~env =
 
 (** Perform [one_step_eval_opt] until the term saturates. *)
 let rec eval_term tm ~stage ~env =
-  let loop tm =  (* AI: This function is better inline-expanded *)
-    match one_step_eval_opt ~stage ~env tm with
-    | Some tm' -> eval_term ~stage ~env tm'
-    | None -> tm
-  in
-  loop tm
+  let tm_opt' = one_step_eval_opt ~stage ~env tm in
+  match tm_opt' with
+  | Some tm' -> eval_term ~stage ~env tm'
+  | None -> tm
 ;;
 
 (*
