@@ -1,9 +1,10 @@
 open OUnit
 open Core
+module S = Lfeqc__.Syntax
+module Log = Lfeqc__.Syntax.Log
 module Main = Lfeqc
 module L = Lfeqc__.Lexer
 module P = Lfeqc__.Parser
-module S = Lfeqc__.Syntax
 module T = Lfeqc__.Algorithmic_typing
 module E = Lfeqc__.Eval
 module Eq = Lfeqc__.Algorithmic_equivalence
@@ -38,7 +39,7 @@ let id x = x
 let parse s =
   try P.toplevel L.main (Lexing.from_string (s ^ ";;")) with
   | _ ->
-    "failed to parse_term: " ^ s |> prerr_endline;
+    Log.error "failed to parse_term: %s" s;
     raise TestError
 ;;
 
@@ -48,7 +49,7 @@ let parse_term s =
   |> function
   | Term t -> t
   | _ ->
-    "failed to parse_term: " ^ s |> prerr_endline;
+    Log.error "failed to parse_term: %s" s;
     raise TestError
 ;;
 
@@ -103,7 +104,7 @@ type ('a, 'b, 'c, 'd, 'f) test =
   }
 
 let run_test_case (case : ('a, 'b, 'c, 'd, 'f) test) =
-  (* printf "Running %s\n" case.name; *)
+  Log.info "running test case: %s" case.name;
   run_test_tt_main
     (case.name
     >::: gen_tests

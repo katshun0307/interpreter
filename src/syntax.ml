@@ -10,6 +10,9 @@ exception NotBound
 exception NotImplemented
 exception EOF
 
+(* Logger *)
+module Log = Dolog.Log
+
 let ( = ) = Stdlib.( = )
 
 (** term variable *)

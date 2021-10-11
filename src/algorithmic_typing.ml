@@ -5,8 +5,7 @@ open Algorithmic_equivalence
 open Tyenv.Tyenv
 
 let raise_not_expected tm =
-  sprintf "judge_type: entered unexpected match case when typing %s" (string_of_tm tm)
-  |> print_endline;
+  Log.error "judge_type: entered unexpected match case when typing %s" (string_of_tm tm);
   raise (NotExpected "judge_type")
 ;;
 
@@ -136,7 +135,7 @@ let rec judge_type ~stage ~tyenv ~env tm =
 and judge_kind ~stage ~tyenv ~env = function
   (* KA-Var *)
   | TyFamily x ->
-    let _ = "Context for type level constants in not yet implemented." |> prerr_endline in
+    Log.info "Context for type level constants in not yet implemented.";
     raise NotImplemented
   (* KA-Pi *)
   | TyPi (x, ty_arg, ty_res) ->

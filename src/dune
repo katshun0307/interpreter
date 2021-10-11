@@ -15,7 +15,7 @@
   environment)
  (preprocess
   (pps ppx_deriving.show))
- (libraries core))
+ (libraries core dolog))
 
 (ocamllex lexer)
 

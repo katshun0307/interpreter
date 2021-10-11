@@ -26,8 +26,6 @@ type progres =
   ; tm_opt : tm option
   }
 
-let print_debug_info s = if !debug then "DEBUG: " ^ s |> print_endline else ()
-
 let string_of_progres { var; ty_opt; tm_opt } : string =
   sprintf
     "var: %s\tty_opt: %s\ttm_opt: %s\n"
@@ -50,7 +48,7 @@ type exec_result =
 (** Return type and reduced value of term. *)
 let exec_core (tm : tm) ~(ty_annot : ty option) : exec_result =
   let ty = Algorithmic_typing.judge_type ~tyenv:!tyenv ~stage:!stage ~env:env.tm_env tm in
-  (* NOTE: apply algorithmic reduction on terms in dependent type *)
+  Log.debug "Result of type derivation: %s" (ty |> string_of_ty);
   let ty =
     Algorithmic_reduction.algorithmic_normal_form_type
       ~stage:!stage
@@ -58,15 +56,10 @@ let exec_core (tm : tm) ~(ty_annot : ty option) : exec_result =
       ~env:env.tm_env
       ty
   in
-  let _ = if !debug then ty |> string_of_ty |> print_endline else () in
-  (* let _ =
-    match ty_annot with
-    | Some ty' -> ([ ty, ty' ], []) @^ constraint_of_subst subst |> unify env.tm_env
-    | None -> ()
-  in *)
+  Log.debug "Result of type normalization: %s" (ty |> string_of_ty);
   let _ = ty_annot in
   let v = Eval.eval_term ~env:env.tm_env ~stage:(Stage.empty ()) tm in
-  let _ = if !debug then v |> string_of_tm |> print_endline else () in
+  Log.debug "Result of term evaluation: %s" (v |> string_of_tm);
   { ty; tm = v }
 ;;
 
@@ -83,11 +76,9 @@ let exec_meta = function
     flag |> string_of_bool |> print_endline
 ;;
 
-(* let flag = has_type *)
-
 (** Execute parsed program *)
 let exec p =
-  if !debug then print_string (show_program p ^ "\n") else ();
+  Log.debug "\n%s" (show_program p);
   match p with
   | Term tm ->
     let result_core = exec_core tm ~ty_annot:None in
@@ -138,16 +129,11 @@ let show_result = function
 let rec repl () =
   print_string (sprintf "|-(%s) " (!stage |> Stage.to_string));
   Out_channel.flush stdout;
-  if not !debug
-  then (
-    try
-      let p = Parser.toplevel Lexer.main (Lexing.from_channel In_channel.stdin) in
-      exec p |> show_result
-    with
-    | e -> e |> Exn.to_string |> print_endline)
-  else (
-    let p = Parser.toplevel Lexer.main (Lexing.from_channel In_channel.stdin) in
-    exec p |> show_result);
+  (try
+     let p = Parser.toplevel Lexer.main (Lexing.from_channel In_channel.stdin) in
+     exec p |> show_result
+   with
+  | e -> Log.error "%s\n%s" (e |> Exn.to_string) (Printexc.get_backtrace ()));
   repl ()
 ;;
 
@@ -163,16 +149,7 @@ let rec file_repl lexbuf () =
        exec prog |> show_result;
        Out_channel.flush stdout
      with
-    | e ->
-      (* error executing program *)
-      (if not !debug
-      then
-        sprintf
-          "=== ERROR ===\n%s\n%s------------"
-          (show_program prog)
-          (e |> Exn.to_string)
-      else sprintf "=== ERROR ===\n%s\n------------" (e |> Exn.to_string))
-      |> print_endline);
+    | e -> Log.error "\n%s\n%s" (show_program prog) (e |> Exn.to_string));
     file_repl lexbuf ()
   with
   | EOF ->
@@ -193,8 +170,7 @@ let silent_run lexbuf () =
         loop lexbuf res
       with
       | e ->
-        (* error in execution *)
-        sprintf "=== ERROR ===\n%s\n------------" (show_program prog) |> print_endline;
+        Log.error "\n%s\n------------" (show_program prog);
         raise e
     with
     | EOF ->
@@ -219,7 +195,13 @@ let aspec =
 (** the main default REPL function *)
 let main () =
   let _ = "=== LFEq◯  REPL ===\n" |> print_string in
+  (* Parse Args *)
   Arg.parse aspec (fun s -> srcfile := s) usage;
+  (* Initialize Logger *)
+  if !debug then Log.set_log_level Log.DEBUG else Log.set_log_level Log.INFO;
+  Log.set_output stdout;
+  Log.color_on ();
+  (* Start REPL *)
   if not (!load_file = "")
   then (
     (* execute file contents *)

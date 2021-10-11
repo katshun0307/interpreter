@@ -101,7 +101,12 @@ and judge_alpha_equivalence_of_type ?(var_pair = []) ?(classifier_pair = []) (ty
         (tyl, tyr)
     in
     ()
-  | _, _ -> raise (NotAlphaEquivalentType (ty1, ty2))
+  | ty1, ty2 ->
+    Log.debug
+      "Two types are not equivalent\n1: %s\n2: %s\n"
+      (string_of_ty ty1)
+      (string_of_ty ty2);
+    raise (NotAlphaEquivalentType (ty1, ty2))
 ;;
 
 (** Judge term equivalence by using QA_ANF rule. *)
@@ -112,7 +117,14 @@ let rec judge_term_equivalence ~tyenv ~(stage : Stage.t) ~(index : Stage.t) ~env
   let anf_s = algorithmic_normal_form ~stage ~index s ~env in
   let anf_t = algorithmic_normal_form ~stage ~index t ~env in
   try judge_alpha_equivalence (anf_s, anf_t) with
-  | _ -> raise NotEquivalent
+  | NotAlphaEquivalent (s1, s2) ->
+    Log.debug
+      "Two terms are not equivalent @stage %s and @index %s\n1: %s\n2: %s\n"
+      (Stage.to_string stage)
+      (Stage.to_string index)
+      s1
+      s2;
+    raise NotEquivalent
 
 (** Judge type equivalence. *)
 and judge_type_equivalence ~tyenv ~stage ~index ~env (ty1, ty2) =
@@ -151,11 +163,10 @@ and judge_type_equivalence ~tyenv ~stage ~index ~env (ty1, ty2) =
   | TyGen (a, ty1), TyGen (b, ty2) when a = b ->
     judge_type_equivalence ~tyenv ~stage ~index ~env (ty1, ty2)
   | ty1, ty2 ->
-    sprintf
+    Log.debug
       "Two types are not equivalent\n1: %s\n2: %s\n"
       (string_of_ty ty1)
-      (string_of_ty ty2)
-    |> prerr_endline;
+      (string_of_ty ty2);
     raise NotEquivalent
 
 and judge_kind_equivalence ~tyenv ~stage ~index ~env = function
