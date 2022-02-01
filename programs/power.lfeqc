@@ -6,13 +6,9 @@
 (* .<let hoge = .~(pow_n (n / 2) x) in hoge * hoge>. *)
 (* else .<let hoge = .~(pow_n (n / 2) x) in hoge * hoge * .~x>.;; *)
 
-next(let a = 3 in a);;
+let gen_code = \x:int. (/\_a. >_a (3 * csp_a x));;
 
-next(let a = 4 in a * a);;
-
-next(let a = prev (next 3) in a);;
-
-(* let rec pow_n = lam n:int. (lam x: int code. x) in pow_n;; *)
+let pow_n = \n:int. (\x: |>_a int. x) in pow_n;;
 
 (* let rec pow_n = lam n:int. (lam x: int code. if n >= 1 && n <= 1 then next(prev x) else false) in pow_n;; *)
 
@@ -34,5 +30,5 @@ let pow_4_11 = (pow_n 8) next(4);;
 
 {next(fuga * fuga), id{pow_4_11} :: sigma x: int code. ((eq{int code} next(let hoge = let hoge = 4 in hoge * hoge in hoge)) pow_4_11)};;
 
-(* (lam x: 
+(* (lam x:
 (sigma y: int code. ((eq{int code} pow_4_11) (next(let hoge = let hoge = 4 in hoge * hoge in hoge * hoge in prev(y))))) x) {next(hoge * hoge), id{pow_4_11}: (sigma x: int code. ((eq{int code} next(let hoge = let hoge = 4 in hoge * hoge in hoge)) pow_4_11))};; *)

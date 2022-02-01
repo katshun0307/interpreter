@@ -1,7 +1,7 @@
 open Tester
-module S = Lfeqc__.Syntax
-module C = Lfeqc__.Classifier_modules
-open Lfeqc__.Classifier_modules
+module S = Mdeq__.Syntax
+module C = Mdeq__.Classifier_modules
+open Mdeq__.Classifier_modules
 
 let var_x = S.User "x"
 

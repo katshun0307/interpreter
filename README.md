@@ -1,14 +1,14 @@
 
-# lfeqc Interpreter
+# mdeq Interpreter
 
 ```
 $ make
-$ ledit ./lfeqc.exe
-$ ledit ./lfeqc.exe -load programs/hogefuga.lfeqc
+$ ledit ./mdeq.exe
+$ ledit ./mdeq.exe -load programs/hogefuga.mdeq
 ```
 
 ```
-Usage: ./lfeqc.exe [-test] [-load <filename>] [-debug]
+Usage: ./mdeq.exe [-test] [-load <filename>] [-debug]
   -load load   program before starting REPL
   -debug debug (output parse tree)
   -help        Display this list of options

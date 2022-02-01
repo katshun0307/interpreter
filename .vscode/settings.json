@@ -1,3 +1,7 @@
 {
-	"makefile.extensionOutputFolder": "./.vscode"
+	"makefile.extensionOutputFolder": "./.vscode",
+	"ocaml.sandbox": {
+		"kind": "opam",
+		"switch": "4.12.0"
+	}
 }

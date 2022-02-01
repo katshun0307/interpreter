@@ -1,3 +1,3 @@
-open Lfeqc
+open Mdeq
 
 let () = main ()

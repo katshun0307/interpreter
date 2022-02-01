@@ -1,7 +1,7 @@
 open Core
 open Tester
-module S = Lfeqc__.Syntax
-module Env = Lfeqc__.Environment.Environment
+module S = Mdeq__.Syntax
+module Env = Mdeq__.Environment.Environment
 
 let var_x = S.User "x"
 

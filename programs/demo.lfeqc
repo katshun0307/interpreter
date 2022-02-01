@@ -1,4 +1,4 @@
-let isodd = lam x: int. (x / 2) * 2 < x;;
+let isodd = \x: int. (x / 2) * 2 < x;;
 
 let pow_n = let rec pow_n = lam n:int. (lam x: int code. (if n >= 1 && n <= 1 then next(prev x) else if (isodd n) then next(let hoge = (prev ((pow_n (n / 2)) x)) in hoge * hoge * prev(x)) else next(let hoge = (prev ((pow_n (n / 2)) x)) in hoge * hoge))) in pow_n;;
 

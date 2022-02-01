@@ -1,3 +1,3 @@
 (tests
  (names syntax_test equivalence_test reduction_test main_test eval_test)
- (libraries ounit core lfeqc))
+ (libraries ounit core mdeq))

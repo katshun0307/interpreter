@@ -1,8 +1,8 @@
 open Tester
-open Lfeqc__.Syntax
-open Lfeqc__.Algorithmic_reduction
-open Lfeqc__.Classifier_modules
-module E = Lfeqc__.Environment.Environment
+open Mdeq__.Syntax
+open Mdeq__.Algorithmic_reduction
+open Mdeq__.Classifier_modules
+module E = Mdeq__.Environment.Environment
 
 let () =
   { name = "algorithmic normal form"

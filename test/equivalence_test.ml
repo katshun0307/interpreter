@@ -1,7 +1,7 @@
 open Tester
-open Lfeqc__.Tyenv
-open Lfeqc__.Classifier_modules
-open Lfeqc__.Environment
+open Mdeq__.Tyenv
+open Mdeq__.Classifier_modules
+open Mdeq__.Environment
 
 let () =
   let open S in

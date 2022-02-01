@@ -1,13 +1,13 @@
 open OUnit
 open Core
-module S = Lfeqc__.Syntax
-module Log = Lfeqc__.Syntax.Log
-module Main = Lfeqc
-module L = Lfeqc__.Lexer
-module P = Lfeqc__.Parser
-module T = Lfeqc__.Algorithmic_typing
-module E = Lfeqc__.Eval
-module Eq = Lfeqc__.Algorithmic_equivalence
+module S = Mdeq__.Syntax
+module Log = Mdeq__.Syntax.Log
+module Main = Mdeq
+module L = Mdeq__.Lexer
+module P = Mdeq__.Parser
+module T = Mdeq__.Algorithmic_typing
+module E = Mdeq__.Eval
+module Eq = Mdeq__.Algorithmic_equivalence
 
 exception TestError
 exception NotImplemented

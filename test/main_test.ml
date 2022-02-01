@@ -1,7 +1,7 @@
 open Core
 open Tester
-module S = Lfeqc__.Syntax
-module Main = Lfeqc
+module S = Mdeq__.Syntax
+module Main = Mdeq
 
 let () =
   let open S in

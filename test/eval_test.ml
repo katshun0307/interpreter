@@ -1,7 +1,7 @@
 open Core
 open Tester
-module Cl = Lfeqc__.Classifier_modules
-module Env = Lfeqc__.Environment.Environment
+module Cl = Mdeq__.Classifier_modules
+module Env = Mdeq__.Environment.Environment
 
 let empty_stage = Cl.Stage.empty ()
 let empty_env = Env.empty ()
