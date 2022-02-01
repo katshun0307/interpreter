@@ -7,6 +7,8 @@ $ ledit ./mdeq.exe
 $ ledit ./mdeq.exe -load programs/hogefuga.mdeq
 ```
 
+* `/programs` directory contains sample programs, but some of them are not up-to-date and will not work.
+
 ```
 Usage: ./mdeq.exe [-test] [-load <filename>] [-debug]
   -load load   program before starting REPL
@@ -65,6 +67,7 @@ meta_options ::=
 	| print_tyenv
 	| t has type T
 	| T has kind K
+```
 
 ## Examples
 
@@ -78,3 +81,8 @@ meta_options ::=
 + `idpeel{id{3}, (x) \m: (eq{int} x 3). m};;`
 + `idpeel{id{3}, (x) \m: (eq{int} x 3). m} id{1+2};;`
 + `# id{4 < 56} has type eq{bool} true true;;`
+
+## Notes
+
+* The parser currently has some flaws. Please consider putting extra parenthesis if a parser error occurs.
+* Any bug report would be appreciated.
