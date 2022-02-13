@@ -134,7 +134,6 @@ and judge_type_equivalence ~tyenv ~stage ~index ~env (ty1, ty2) =
   | TyFamily x, TyFamily y when x = y -> ()
   (* QTA-Pi *)
   | TyPi (x1, ty_s1, ty_s2), TyPi (x2, ty_t1, ty_t2) ->
-    assert (ty_s1 = ty_s2);
     judge_type_equivalence ~tyenv ~stage ~index ~env (ty_s1, ty_t1);
     judge_type_equivalence
       ~tyenv:(Tyenv.extend_tybind (x1, stage, ty_s1) tyenv)
