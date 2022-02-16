@@ -142,10 +142,10 @@ let execution_count = ref 0
 (** file repl  *)
 let rec file_repl lexbuf () =
   try
+    printf "=== exec %d ===\n" !execution_count;
+    execution_count := !execution_count + 1;
     let prog = Parser.toplevel Lexer.main lexbuf in
     (try
-       printf "=== exec %d ===\n" !execution_count;
-       execution_count := !execution_count + 1;
        exec prog |> show_result;
        Out_channel.flush stdout
      with
