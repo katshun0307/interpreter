@@ -1,0 +1,11 @@
+(*
+This program proves surjectivity of function `f` and `g`.
+*)
+let f = \x:int. x;;
+let g = \x:int. x * -1;;
+
+(* prove surjectivity of `f` *)
+# \x:int. {x, id{x} :: sum y:int. (eq{int} x (f y))} has type prod x:int. sum y:int. eq{int} x (f y);;
+
+(* prove surjectivity of `g` *)
+# \x:int. {x * -1, id{x} :: sum y:int. (eq{int} x (g y))} has type prod x:int. sum y:int. eq{int} x (g y);;

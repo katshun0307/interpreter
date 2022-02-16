@@ -5,6 +5,47 @@ module E = Environment.Environment
 
 (** Algorithmic reduction on terms and types. *)
 
+exception NotNormalized
+
+let rec normalize_tree t =
+  match t with
+  (* calc *)
+  | BinOp (op, IntImmidiate i1, IntImmidiate i2) -> fun_of_op op i1 i2
+  | BinOp (op, BoolImmidiate i1, BoolImmidiate i2) -> fun_of_lop op i1 i2
+  (* each child is single *)
+  | BinOp (Plus, IntImmidiate 0, t) | BinOp (Plus, t, IntImmidiate 0) ->
+    t |> normalize_tree
+  | BinOp (Mult, IntImmidiate 0, t) | BinOp (Mult, t, IntImmidiate 0) -> IntImmidiate 0
+  | BinOp (Mult, IntImmidiate 1, t) | BinOp (Mult, t, IntImmidiate 1) ->
+    t |> normalize_tree
+  | BinOp (And, BoolImmidiate true, t) | BinOp (And, t, BoolImmidiate true) ->
+    t |> normalize_tree
+  | BinOp (And, BoolImmidiate false, t) | BinOp (And, t, BoolImmidiate false) ->
+    BoolImmidiate false
+  | BinOp (Or, BoolImmidiate false, t) | BinOp (Or, t, BoolImmidiate false) ->
+    t |> normalize_tree
+  | BinOp (Or, BoolImmidiate true, t) | BinOp (Or, t, BoolImmidiate true) ->
+    BoolImmidiate true
+  | BinOp (op, TmVariable tmv1, TmVariable tmv2) ->
+    if Stdlib.( > ) tmv1 tmv2 then BinOp (op, TmVariable tmv2, TmVariable tmv1) else t
+  (* immediate and single binop *)
+  (* reorder *)
+  | BinOp ((Plus as op), (IntImmidiate _ as tm2), (TmVariable _ as tm1))
+  | BinOp ((Mult as op), (IntImmidiate _ as tm2), (TmVariable _ as tm1)) ->
+    BinOp (op, tm1, tm2)
+  | BinOp (Plus, IntImmidiate i1, BinOp (Plus, TmVariable tmv, IntImmidiate i2))
+  | BinOp (Plus, BinOp (Plus, TmVariable tmv, IntImmidiate i2), IntImmidiate i1) ->
+    BinOp (Plus, TmVariable tmv, fun_of_op Plus i1 i2)
+  | BinOp (Mult, IntImmidiate i1, BinOp (Mult, TmVariable tmv, IntImmidiate i2))
+  | BinOp (Mult, BinOp (Mult, TmVariable tmv, IntImmidiate i2), IntImmidiate i1) ->
+    BinOp (Mult, TmVariable tmv, fun_of_op Mult i1 i2)
+  (* Recur *)
+  | BinOp (op, t1, t2) as t ->
+    let t' = BinOp (op, t1 |> normalize_tree, t2 |> normalize_tree) in
+    if t = t' then t else t' |> normalize_tree
+  | _ as t -> t
+;;
+
 (** Axioms for algorithmic reduction. *)
 let rec algorithmic_reduction_axioms tm ~(stage : Stage.t) ~(index : Stage.t) ~env =
   match tm with
@@ -66,6 +107,9 @@ let rec algorithmic_reduction_axioms tm ~(stage : Stage.t) ~(index : Stage.t) ~e
     when Stage.allow_beta_reduction ~stage ~index -> fun_of_op op i1 i2 |> Option.some
   | BinOp (op, BoolImmidiate b1, BoolImmidiate b2)
     when Stage.allow_beta_reduction ~stage ~index -> fun_of_lop op b1 b2 |> Option.some
+  | BinOp (_, _, _) as binop ->
+    let binop' = binop |> normalize_tree in
+    if binop' = binop then None else Some binop'
   | TmLetRec (f, TmLam (x, _, tm11), tm2) when Stage.allow_beta_reduction ~stage ~index ->
     let dummyenv = ref (E.empty ()) in
     let newenv = env |> E.extend f (ProcV (x, tm11, dummyenv)) in

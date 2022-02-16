@@ -66,5 +66,29 @@ let () =
       ]
   }
   |> run_test_case
+  |> ignore;
+  { name = "normalize tree"
+  ; func = normalize_tree
+  ; prep = (fun x -> x)
+  ; ishow = show_tm
+  ; oshow = string_of_tm
+  ; iprep = parse_term
+  ; oprep = parse_term
+  ; cmp = ( = )
+  ; dataset =
+      [ { input = "x"; expected = "x" }
+      ; { input = "1 * x"; expected = "x * 1" }
+      ; { input = "-1 * -1"; expected = "1" }
+      ; { input = "1 * -1"; expected = "-1" }
+      ; { input = "-1 * 1"; expected = "-1" }
+      ; { input = "-1 * -1 * x"; expected = "x * 1" }
+      ; { input = "-1 * -1"; expected = "1" }
+      ; { input = "x * -1 * -1"; expected = "x * 1" }
+        (* ; { input = "-1 * x * -1"; expected = "x" } *)
+        (* ; { input = "-1 * -1 * -1 * x"; expected = "x * -1" } *)
+        (* ; { input = "-1 * -1 * -1 * x"; expected = "y * -1" } *)
+      ]
+  }
+  |> run_test_case
   |> ignore
 ;;
